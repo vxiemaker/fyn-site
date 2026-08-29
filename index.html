@@ -207,6 +207,20 @@ input, textarea { font: inherit; color: inherit; }
   .hero__note { font-size: 0.82rem; }
 }
 
+/* Phone: fit the whole hero — text AND the full photo card with its stamp —
+   into the first screen, matching the desktop composition. */
+@media (max-width: 620px) {
+  .hero { padding-top: 84px; padding-bottom: 1.2rem; }
+  .hero__grid { gap: 1.1rem; }
+  .hero__mascot { height: 52px; margin-bottom: 0.45rem; }
+  .hero__eyebrow { margin-bottom: 0.7rem; }
+  .hero__wordmark { font-size: clamp(3.4rem, 18vw, 5rem); }
+  .hero__tagline { margin: 0.85rem 0 1.1rem; font-size: 0.98rem; }
+  .hero__note { margin-top: 0.85rem !important; }
+  /* keep the photo's portrait shape, just sized to fit the screen */
+  .hero__figure { height: min(38svh, 320px); width: auto; margin-inline: auto; }
+  .stamp { width: clamp(84px, 21vw, 104px); height: clamp(84px, 21vw, 104px); }
+}
 .hero__media { position: relative; }
 .hero__figure {
   position: relative; border-radius: var(--radius-lg); overflow: hidden;
