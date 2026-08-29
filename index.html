@@ -421,13 +421,25 @@ input, textarea { font: inherit; color: inherit; }
 .receipt__title { text-align: center; font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 1.7rem; letter-spacing: 0.03em; }
 .receipt__sub { text-align: center; font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-soft); font-weight: 800; margin-top: 0.2rem; }
 .receipt__hr { border: 0; border-top: 2px dashed var(--ink); opacity: 0.45; margin: 1rem 0 0.8rem; }
-.receipt__cols, .receipt__row { display: grid; grid-template-columns: 2.6rem 1fr auto; gap: 0.6rem; align-items: center; }
+.receipt__cols, .receipt__row { display: grid; grid-template-columns: 76px 1fr auto 24px; gap: 0.5rem; align-items: center; }
 .receipt__cols { font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: var(--ink-soft); padding-bottom: 0.45rem; border-bottom: 2px solid var(--ink); }
 .receipt__cols .amt, .receipt__row .amt { text-align: right; }
 .receipt__rows { min-height: 2.6rem; }
 .receipt__row { padding: 0.6rem 0; border-bottom: 1px solid var(--line); font-weight: 600; }
-.receipt__row .qty, .receipt__row .amt { font-family: "Anton", sans-serif; font-size: 1.05rem; }
+.receipt__row .amt { font-family: "Anton", sans-serif; font-size: 1.05rem; }
 .receipt__row .item { line-height: 1.15; }
+/* per-line controls so the box can be adjusted from the receipt itself */
+.rq { display: inline-flex; align-items: center; border: 2px solid var(--ink); border-radius: 100px; overflow: hidden; background: var(--cream); }
+.rq button { width: 22px; height: 24px; font-family: "Anton", sans-serif; font-size: 0.95rem; line-height: 1; display: grid; place-items: center; color: var(--ink); transition: background-color 0.18s var(--ease); }
+.rq button:hover { background: rgba(202,49,51,0.18); }
+.rq__n { min-width: 26px; text-align: center; font-family: "Anton", sans-serif; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.rrm { width: 24px; height: 24px; border-radius: 50%; color: var(--ink-soft); font-size: 1.15rem; line-height: 1; display: grid; place-items: center; transition: background-color 0.18s var(--ease), color 0.18s var(--ease); }
+.rrm:hover { background: var(--red); color: #fff; }
+@media (max-width: 420px) {
+  .receipt__cols, .receipt__row { grid-template-columns: 70px 1fr auto 20px; gap: 0.4rem; }
+  .receipt__row .item { font-size: 0.88rem; }
+  .rrm { width: 20px; height: 20px; font-size: 1rem; }
+}
 .receipt__empty { padding: 1.4rem 0; text-align: center; color: var(--ink-soft); font-weight: 600; }
 .receipt__totals { margin-top: 0.9rem; display: grid; gap: 0.35rem; }
 .receipt__line { display: flex; justify-content: space-between; font-weight: 600; color: var(--ink-soft); }
@@ -731,7 +743,7 @@ input, textarea { font: inherit; color: inherit; }
           <div class="receipt__title">Your box</div>
           <div class="receipt__sub">FYN · order receipt</div>
           <hr class="receipt__hr" />
-          <div class="receipt__cols"><span>Qty</span><span>Item</span><span class="amt">Amount</span></div>
+          <div class="receipt__cols"><span>Qty</span><span>Item</span><span class="amt">Amount</span><span aria-hidden="true"></span></div>
           <div class="receipt__rows" id="receiptRows"></div>
           <div class="receipt__totals">
             <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
@@ -1078,7 +1090,7 @@ function renderCart() {
   const total = sub + del;
 
   receiptRows.innerHTML = lines.length
-    ? lines.map(l => `<div class="receipt__row"><span class="qty">${l.qty}&times;</span><span class="item">${l.name}</span><span class="amt">${money(l.amt)}</span></div>`).join("")
+    ? lines.map(l => `<div class="receipt__row"><span class="rq" data-name="${esc(l.name)}"><button type="button" data-act="dec" aria-label="One less ${esc(l.name)}">&minus;</button><span class="rq__n">${l.qty}</span><button type="button" data-act="inc" aria-label="One more ${esc(l.name)}">+</button></span><span class="item">${esc(l.name)}</span><span class="amt">${money(l.amt)}</span><button type="button" class="rrm" data-name="${esc(l.name)}" aria-label="Take ${esc(l.name)} out of the box">&times;</button></div>`).join("")
     : `<div class="receipt__empty">Your box is empty — add some cookies above 👆</div>`;
 
   rSub.textContent = money(sub);
@@ -1146,6 +1158,28 @@ cartIg.addEventListener("click", () => {
 });
 
 renderCart();
+
+/* Adjust the box straight from the receipt lines */
+receiptRows.addEventListener("click", e => {
+  const step = e.target.closest(".rq button");
+  const remove = e.target.closest(".rrm");
+  if (!step && !remove) return;
+
+  if (remove) {
+    delete cart[remove.getAttribute("data-name")];
+  } else {
+    const name = step.closest(".rq").getAttribute("data-name");
+    const dir = step.getAttribute("data-act") === "inc" ? 1 : -1;
+    const next = (cart[name] || 0) + dir;
+    if (next <= 0) delete cart[name]; else cart[name] = next;
+  }
+  renderCart();
+
+  if (!reduceMotion) {
+    const t = document.getElementById("rTotal");
+    t.classList.remove("is-bump"); void t.offsetWidth; t.classList.add("is-bump");
+  }
+});
 
 
 /* ============================================================================
