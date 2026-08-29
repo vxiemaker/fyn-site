@@ -221,6 +221,17 @@ input, textarea { font: inherit; color: inherit; }
   .hero__figure { height: min(38svh, 320px); width: auto; margin-inline: auto; }
   .stamp { width: clamp(84px, 21vw, 104px); height: clamp(84px, 21vw, 104px); }
 }
+/* Shorter phones (SE-sized): tighten further so the card still fits */
+@media (max-width: 620px) and (max-height: 730px) {
+  .hero { padding-top: 76px; padding-bottom: 0.7rem; }
+  .hero__grid { gap: 0.75rem; }
+  .hero__mascot { height: 42px; margin-bottom: 0.25rem; }
+  .hero__eyebrow { margin-bottom: 0.5rem; }
+  .hero__wordmark { font-size: clamp(2.8rem, 15vw, 4rem); }
+  .hero__tagline { margin: 0.6rem 0 0.85rem; font-size: 0.9rem; }
+  .hero__note { margin-top: 0.6rem !important; font-size: 0.78rem; }
+  .hero__figure { height: min(33svh, 250px); }
+}
 .hero__media { position: relative; }
 .hero__figure {
   position: relative; border-radius: var(--radius-lg); overflow: hidden;
