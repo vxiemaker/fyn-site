@@ -526,6 +526,55 @@ input, textarea { font: inherit; color: inherit; }
 }
 .adm-toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
 
+/* ============================================================================
+   FROM THE GRAM — post gallery
+   ============================================================================ */
+.gram { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(0.6rem, 2.5vw, 1rem); margin-top: clamp(2rem, 5vw, 3rem); }
+@media (min-width: 760px) { .gram { grid-template-columns: repeat(3, 1fr); } }
+.gram__item {
+  display: block; border: 3px solid var(--ink); border-radius: 14px; overflow: hidden;
+  box-shadow: 4px 4px 0 var(--ink); background: var(--card);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.gram__item:hover, .gram__item:focus-visible { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--red); }
+.gram__item img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+
+/* ============================================================================
+   QUICK-PICK BOXES
+   ============================================================================ */
+.bundles { text-align: center; margin-bottom: clamp(1.5rem, 4vw, 2.25rem); }
+.bundles__label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 0.7rem; }
+.bundles__row { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.bundle-btn {
+  font-family: "Anton", sans-serif; text-transform: uppercase; font-size: clamp(0.9rem, 3vw, 1.05rem);
+  letter-spacing: 0.03em; padding: 0.6em 1.1em; border-radius: 100px;
+  border: 2.5px solid var(--ink); background: var(--card); color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.bundle-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--red); background: var(--red); color: #fff; }
+.bundle-btn:active { transform: none; box-shadow: 2px 2px 0 var(--ink); }
+.bundles__hint { display: block; margin-top: 0.7rem; font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; }
+
+/* ============================================================================
+   GOOD TO KNOW — FAQ
+   ============================================================================ */
+.faq { max-width: 760px; margin: clamp(2rem, 5vw, 3rem) auto 0; display: grid; gap: 0.75rem; }
+.faq details {
+  background: var(--card); border: 3px solid var(--ink); border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--ink); overflow: hidden;
+}
+.faq summary {
+  cursor: pointer; padding: 1rem 1.1rem; list-style: none;
+  font-family: "Anton", sans-serif; text-transform: uppercase; font-size: clamp(0.95rem, 3vw, 1.1rem);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: "Archivo", sans-serif; font-size: 1.5rem; line-height: 1; color: var(--red); flex: none; }
+.faq details[open] summary::after { content: "\2013"; }
+.faq summary:hover { background: rgba(202,49,51,0.07); }
+.faq p { padding: 0 1.1rem 1.1rem; color: var(--ink-soft); font-weight: 500; }
+
 /* Badges sit like hand-slapped stickers */
 .card:nth-child(1) .card__tag { transform: rotate(-3deg); }
 .card:nth-child(2) .card__tag { transform: rotate(2.5deg); }
@@ -691,6 +740,31 @@ input, textarea { font: inherit; color: inherit; }
     </div>
   </section>
 
+  <!-- ========================= FROM THE GRAM ========================= -->
+  <section class="section" id="gram" aria-labelledby="gramTitle">
+    <div class="container">
+      <div class="section__head section__head--center reveal">
+        <p class="eyebrow" style="justify-content:center;">Straight from the feed</p>
+        <h2 class="section__title" id="gramTitle">From the <span class="hl">gram</span></h2>
+        <p class="section__intro">New drops, new flavours and the odd bad joke — it all lands on Instagram first.</p>
+      </div>
+      <div class="gram reveal">
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g1.jpg" alt="FYN &quot;wanted&quot; poster featuring a chocolate chip cookie" width="640" height="640" loading="lazy" decoding="async" /></a>
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g2.jpg" alt="Stack of FYN cookies with the caption his replies were dry, our cookies aren't" width="640" height="640" loading="lazy" decoding="async" /></a>
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g3.jpg" alt="NYK Double C cookie on a printed FYN backdrop" width="640" height="640" loading="lazy" decoding="async" /></a>
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g4.jpg" alt="Molten NYK Double C cookies broken open" width="640" height="640" loading="lazy" decoding="async" /></a>
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g5.jpg" alt="Dark chocolate FYN cookie topped with sea salt" width="640" height="640" loading="lazy" decoding="async" /></a>
+        <a href="#" class="gram__item" data-ig target="_blank" rel="noopener"><img src="/gram/g6.jpg" alt="Close-up of a fudgy FYN brownie cookie" width="640" height="640" loading="lazy" decoding="async" /></a>
+      </div>
+      <div style="text-align:center; margin-top: clamp(1.5rem,4vw,2.25rem);" class="reveal">
+        <a class="btn btn--ink" id="gramFollow" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor" stroke="none"/></svg>
+          Follow @fyn.lb
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ========================= ORDER ========================= -->
   <section class="section section--cream2 section--order" id="order" aria-labelledby="orderTitle">
     <div class="order-watermark" aria-hidden="true"></div>
@@ -699,6 +773,17 @@ input, textarea { font: inherit; color: inherit; }
         <p class="eyebrow" style="justify-content:center;">Order</p>
         <h2 class="section__title" id="orderTitle">Reserve your <span class="hl">box</span></h2>
         <p class="section__intro">Build your box below — add your cookies, we add the total and delivery, and you send it straight to us. Planning an event, a bulk box or corporate gifting? Just message us.</p>
+      </div>
+
+      <!-- Quick-pick box sizes: fills the receipt with a spread of flavours -->
+      <div class="bundles reveal">
+        <span class="bundles__label">Quick pick a box</span>
+        <div class="bundles__row">
+          <button class="bundle-btn" type="button" data-qty="4">Box of 4</button>
+          <button class="bundle-btn" type="button" data-qty="6">Box of 6</button>
+          <button class="bundle-btn" type="button" data-qty="12">Box of 12</button>
+        </div>
+        <span class="bundles__hint">We spread the flavours evenly — change any of it below.</span>
       </div>
 
       <!-- Cart / receipt: add cookies above, totals update live, then order -->
@@ -746,6 +831,43 @@ input, textarea { font: inherit; color: inherit; }
 
     </div>
   </section>
+  <!-- ========================= GOOD TO KNOW ========================= -->
+  <section class="section section--cream2" id="faq" aria-labelledby="faqTitle">
+    <div class="container">
+      <div class="section__head section__head--center reveal">
+        <p class="eyebrow" style="justify-content:center;">Good to know</p>
+        <h2 class="section__title" id="faqTitle">Before you <span class="hl">order</span></h2>
+        <p class="section__intro">The things people ask us most. Anything else — just message us.</p>
+      </div>
+      <div class="faq reveal">
+        <details>
+          <summary>How many cookies do I have to order?</summary>
+          <p>Minimum 4 pieces per order. Mix the flavours however you like — they don't all have to be the same.</p>
+        </details>
+        <details>
+          <summary>Do I need to order in advance?</summary>
+          <p>Yes. Every box is baked fresh for your order rather than sitting on a shelf, so all orders are pre-order. Message us and we'll confirm the soonest slot we can bake for you.</p>
+        </details>
+        <details>
+          <summary>How much is delivery?</summary>
+          <p>Delivery is $2. Pickup is also an option — just tell us which you'd prefer when you send your order.</p>
+        </details>
+        <details>
+          <summary>Where do you deliver?</summary>
+          <p>We deliver around Lebanon. Send us your area with your order and we'll confirm it and the timing before you pay anything.</p>
+        </details>
+        <details>
+          <summary>Anything I should know about allergies?</summary>
+          <p>Our cookies may contain gluten, dairy, eggs and nuts, and they're all baked in the same kitchen. Please tell us about any allergy before ordering so we can advise you properly.</p>
+        </details>
+        <details>
+          <summary>How do I actually order?</summary>
+          <p>Build your box on this page, then send it to us on WhatsApp or Instagram — the button carries your whole order across, so you don't have to type it out. We reply to confirm the total and the timing.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- ========================= FOOTER ========================= -->
@@ -1026,6 +1148,29 @@ cartIg.addEventListener("click", () => {
 
 renderCart();
 
+
+/* ============================================================================
+   FROM THE GRAM + QUICK-PICK BOXES
+   ============================================================================ */
+document.querySelectorAll("[data-ig]").forEach(a => { a.href = igHref; });
+const gramFollow = document.getElementById("gramFollow");
+if (gramFollow) gramFollow.href = igHref;
+
+const bundleRow = document.querySelector(".bundles__row");
+if (bundleRow) bundleRow.addEventListener("click", e => {
+  const btn = e.target.closest(".bundle-btn");
+  if (!btn) return;
+  const want = parseInt(btn.getAttribute("data-qty"), 10);
+  const names = MENU.filter(m => !m.soon).map(m => m.name);
+  if (!names.length || !want) return;
+  Object.keys(cart).forEach(k => delete cart[k]);
+  for (let i = 0; i < want; i++) {
+    const n = names[i % names.length];
+    cart[n] = (cart[n] || 0) + 1;
+  }
+  renderCart();
+  document.getElementById("receipt").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+});
 /* ============================================================================
    NAV — scroll state + mobile menu
    ============================================================================ */
