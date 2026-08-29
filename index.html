@@ -206,23 +206,24 @@ input, textarea { font: inherit; color: inherit; }
    can sit in column 2 while the buttons span the full width underneath.
    --------------------------------------------------------------------------- */
 @media (max-width: 620px) {
-  .hero { padding-top: 84px; padding-bottom: 1.2rem; }
+  .hero { min-height: auto; padding-top: 92px; padding-bottom: 2.6rem; }
   .hero__grid {
-    grid-template-columns: 1fr 0.82fr;
+    grid-template-columns: 1fr 0.95fr;
     column-gap: 0.7rem; row-gap: 0;
     align-items: start;
   }
   .hero__content { display: contents; }
 
   .hero__mascot  { grid-column: 1; grid-row: 1; height: 44px; margin-bottom: 0.35rem; }
-  .hero__eyebrow { grid-column: 1; grid-row: 2; margin-bottom: 0.45rem; font-size: 0.6rem; letter-spacing: 0.12em; }
+  .hero__eyebrow { grid-column: 1; grid-row: 2; display: block; margin-bottom: 0.45rem; font-size: 0.6rem; letter-spacing: 0.1em; }
+  .hero__eyebrow::before { content: "★ "; display: inline; }
   .hero__wordmark{ grid-column: 1; grid-row: 3; font-size: clamp(2.9rem, 16vw, 4.5rem); }
   .hero__tagline { grid-column: 1; grid-row: 4; margin: 0.7rem 0 0; font-size: 0.86rem; max-width: none; }
 
   /* the photo, beside the text, vertically centred against it */
   .hero__media   { grid-column: 2; grid-row: 1 / 5; align-self: center; }
   .hero__figure  { width: 100%; height: auto; aspect-ratio: 4 / 5; }
-  .stamp { width: clamp(64px, 17vw, 84px); height: clamp(64px, 17vw, 84px); right: -10px; bottom: -10px; }
+  .stamp { width: clamp(48px, 13vw, 62px); height: clamp(48px, 13vw, 62px); right: -8px; bottom: -8px; }
   .stamp text { font-size: 15px; }
   .stamp .stamp-center { font-size: 34px; }
 
