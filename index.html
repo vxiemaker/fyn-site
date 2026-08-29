@@ -289,6 +289,13 @@ input, textarea { font: inherit; color: inherit; }
 .section { padding-block: var(--section-y); scroll-margin-top: 76px; }
 .section--red { background-color: var(--red); background-image: var(--paper-tex); background-size: 220px; background-blend-mode: multiply; color: var(--cream); }
 .section--cream2 { background-color: var(--cream-2); background-image: var(--paper-tex); background-size: 220px; background-blend-mode: multiply; }
+/* The gallery above is plain cream and the order panel is a shade deeper, which
+   left a hard line between them. Fade the first panel in instead of stepping. */
+#order {
+  background-image: var(--paper-tex), linear-gradient(to bottom, var(--cream) 0, var(--cream-2) 220px);
+  background-size: 220px, auto;
+  background-blend-mode: multiply, normal;
+}
 .section__head { max-width: 48rem; }
 .section__head--center { margin-inline: auto; text-align: center; }
 .section__title { font-family: "Anton", sans-serif; font-size: var(--fs-h2); text-transform: uppercase; margin: 0.6rem 0 0.9rem; line-height: 0.92; }
