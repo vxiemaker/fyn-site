@@ -414,7 +414,7 @@ input, textarea { font: inherit; color: inherit; }
 .section--order > .container { position: relative; z-index: 1; }
 .order-or { text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; color: var(--ink-soft); margin: 0.5rem 0 1.5rem; }
 
-.receipt { background: #fbf7ec; border: 3px solid var(--ink); border-radius: 14px; max-width: 560px;
+.receipt { scroll-margin-top: 90px; background: #fbf7ec; border: 3px solid var(--ink); border-radius: 14px; max-width: 560px;
   margin: clamp(2rem,5vw,3rem) auto 0; box-shadow: var(--hard); overflow: hidden; }
 .receipt__top { height: 12px; background: repeating-linear-gradient(90deg, var(--gold) 0 14px, #d9b876 14px 24px); }
 .receipt__inner { padding: clamp(1.3rem, 3.5vw, 2rem); }
@@ -638,17 +638,17 @@ input, textarea { font: inherit; color: inherit; }
     <nav class="nav__links" aria-label="Primary">
       <a class="nav__link" href="#cookies">The Cookies</a>
       <a class="nav__link" href="#story">Our Story</a>
-      <a class="nav__link" href="#order">Order</a>
+      <a class="nav__link" href="#receipt">Order</a>
     </nav>
-    <a class="btn btn--red nav__cta" href="#order">Reserve your box</a>
+    <a class="btn btn--red nav__cta" href="#receipt">Reserve your box</a>
     <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu"><span></span><span></span><span></span></button>
   </div>
 </header>
 <div class="mobile-menu" id="mobileMenu">
   <a href="#cookies">The Cookies</a>
   <a href="#story">Our Story</a>
-  <a href="#order">Order</a>
-  <a class="btn btn--red" href="#order">Reserve your box</a>
+  <a href="#receipt">Order</a>
+  <a class="btn btn--red" href="#receipt">Reserve your box</a>
 </div>
 
 <main id="top">
@@ -662,7 +662,7 @@ input, textarea { font: inherit; color: inherit; }
           <h1 class="hero__wordmark reveal" id="heroTitle">FYN</h1>
           <p class="hero__tagline reveal">Thick, gooey, stuffed. His replies were dry — <b>our cookies aren’t.</b> Freshly baked, for those who value quality.</p>
           <div class="hero__actions reveal">
-            <a class="btn btn--red" href="#order">
+            <a class="btn btn--red" href="#receipt">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               Reserve your box
             </a>
@@ -707,11 +707,45 @@ input, textarea { font: inherit; color: inherit; }
       <div class="section__head reveal">
         <p class="eyebrow">The Menu</p>
         <h2 class="section__title" id="cookiesTitle">The <span class="hl">cookies</span></h2>
-        <p class="section__intro">New York–style, stuffed and baked fresh to order. No dry crumbs here — just thick, gooey centers.</p>
+        <p class="section__intro">New York–style, stuffed and baked fresh to order. No dry crumbs here — just thick, gooey centers. Add what you want and your box adds up below.</p>
         <span class="menu-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Min order 4 pcs · Pre-order required</span>
       </div>
       <!-- Cards are generated from the MENU array in the page script. -->
       <div class="cookies" id="cookieGrid"></div>
+
+      <!-- Quick-pick box sizes: fills the receipt with a spread of flavours -->
+      <div class="bundles reveal">
+        <span class="bundles__label">Quick pick a box</span>
+        <div class="bundles__row">
+          <button class="bundle-btn" type="button" data-qty="4">Box of 4</button>
+          <button class="bundle-btn" type="button" data-qty="6">Box of 6</button>
+          <button class="bundle-btn" type="button" data-qty="12">Box of 12</button>
+        </div>
+        <span class="bundles__hint">We spread the flavours evenly — change any of it below.</span>
+      </div>
+
+      <!-- Cart / receipt: add cookies above, totals update live, then order -->
+      <div class="receipt reveal" id="receipt">
+        <div class="receipt__top" aria-hidden="true"></div>
+        <div class="receipt__inner">
+          <div class="receipt__title">Your box</div>
+          <div class="receipt__sub">FYN · order receipt</div>
+          <hr class="receipt__hr" />
+          <div class="receipt__cols"><span>Qty</span><span>Item</span><span class="amt">Amount</span></div>
+          <div class="receipt__rows" id="receiptRows"></div>
+          <div class="receipt__totals">
+            <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
+            <div class="receipt__line"><span>Delivery</span><span id="rDel">$0.00</span></div>
+            <div class="receipt__total"><span class="label">Total</span><span class="val" id="rTotal">$0.00</span></div>
+          </div>
+          <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
+          <div class="receipt__actions">
+            <a class="btn btn--wa btn--block is-disabled" id="cartWa" href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy &amp; DM on Instagram</button>
+          </div>
+        </div>
+        <div class="receipt__perf" aria-hidden="true"></div>
+      </div>
     </div>
   </section>
 
@@ -770,46 +804,11 @@ input, textarea { font: inherit; color: inherit; }
     <div class="order-watermark" aria-hidden="true"></div>
     <div class="container">
       <div class="section__head section__head--center reveal">
-        <p class="eyebrow" style="justify-content:center;">Order</p>
-        <h2 class="section__title" id="orderTitle">Reserve your <span class="hl">box</span></h2>
-        <p class="section__intro">Build your box below — add your cookies, we add the total and delivery, and you send it straight to us. Planning an event, a bulk box or corporate gifting? Just message us.</p>
+        <p class="eyebrow" style="justify-content:center;">Another way</p>
+        <h2 class="section__title" id="orderTitle">Or just <span class="hl">message us</span></h2>
+        <p class="section__intro">Rather not use the box builder? Send us a message and we’ll sort it out with you — same for events, bulk boxes and corporate gifting.</p>
       </div>
 
-      <!-- Quick-pick box sizes: fills the receipt with a spread of flavours -->
-      <div class="bundles reveal">
-        <span class="bundles__label">Quick pick a box</span>
-        <div class="bundles__row">
-          <button class="bundle-btn" type="button" data-qty="4">Box of 4</button>
-          <button class="bundle-btn" type="button" data-qty="6">Box of 6</button>
-          <button class="bundle-btn" type="button" data-qty="12">Box of 12</button>
-        </div>
-        <span class="bundles__hint">We spread the flavours evenly — change any of it below.</span>
-      </div>
-
-      <!-- Cart / receipt: add cookies above, totals update live, then order -->
-      <div class="receipt reveal" id="receipt">
-        <div class="receipt__top" aria-hidden="true"></div>
-        <div class="receipt__inner">
-          <div class="receipt__title">Your box</div>
-          <div class="receipt__sub">FYN · order receipt</div>
-          <hr class="receipt__hr" />
-          <div class="receipt__cols"><span>Qty</span><span>Item</span><span class="amt">Amount</span></div>
-          <div class="receipt__rows" id="receiptRows"></div>
-          <div class="receipt__totals">
-            <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
-            <div class="receipt__line"><span>Delivery</span><span id="rDel">$0.00</span></div>
-            <div class="receipt__total"><span class="label">Total</span><span class="val" id="rTotal">$0.00</span></div>
-          </div>
-          <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
-          <div class="receipt__actions">
-            <a class="btn btn--wa btn--block is-disabled" id="cartWa" href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
-            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy &amp; DM on Instagram</button>
-          </div>
-        </div>
-        <div class="receipt__perf" aria-hidden="true"></div>
-      </div>
-
-      <p class="order-or reveal">Or just message us directly</p>
 
       <div class="order__channels">
         <div class="channel reveal">
