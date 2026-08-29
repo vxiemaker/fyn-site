@@ -526,6 +526,35 @@ input, textarea { font: inherit; color: inherit; }
 }
 .adm-toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------------------------------------------------------------------------
+   SIGNATURE: drip edge where the cream section spills into the red one.
+   Matches the heavy black outlines used across the brand.
+   --------------------------------------------------------------------------- */
+#story { position: relative; }
+#story::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 56px;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'240'%20height%3D'56'%20viewBox%3D'0%200%20240%2056'%3E%3Cpath%20d%3D'M0%2C-10%20H240%20V14%20H200%20Q200%2C36%20190%2C36%20Q180%2C36%20180%2C14%20H150%20Q150%2C48%20140%2C48%20Q130%2C48%20130%2C14%20H100%20Q100%2C30%2092%2C30%20Q84%2C30%2084%2C14%20H50%20Q51%2C40%2040%2C40%20Q29%2C40%2029%2C14%20H0%20Z'%20fill%3D'%23efe6cb'%20stroke%3D'%2317140f'%20stroke-width%3D'4'%20stroke-linejoin%3D'round'%2F%3E%3C%2Fsvg%3E") repeat-x top left;
+  background-size: 240px 56px;
+  pointer-events: none; z-index: 1;
+}
+#story > .container { position: relative; z-index: 2; }
+@media (max-width: 620px) { #story::before { background-size: 170px 40px; height: 40px; } }
+
+/* Badges sit like hand-slapped stickers */
+.card:nth-child(1) .card__tag { transform: rotate(-3deg); }
+.card:nth-child(2) .card__tag { transform: rotate(2.5deg); }
+.card:nth-child(3) .card__tag { transform: rotate(-2deg); }
+.card:nth-child(4) .card__tag { transform: rotate(3deg); }
+
+/* The mascot takes a bite whenever a cookie is added to the box */
+@keyframes chomp {
+  0%   { transform: rotate(0deg)   scale(1); }
+  22%  { transform: rotate(-7deg)  scale(1.18); }
+  45%  { transform: rotate(5deg)   scale(0.94); }
+  70%  { transform: rotate(-3deg)  scale(1.08); }
+  100% { transform: rotate(0deg)   scale(1); }
+}
+.nav__logo.is-chomping { animation: chomp 0.55s var(--ease); }
 /* ============================================================================
    FOOTER
    ============================================================================ */
@@ -632,8 +661,8 @@ input, textarea { font: inherit; color: inherit; }
   <!-- Scrolling hype band under the hero -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
-      <span>Freshly Baked</span><span>New York Style</span><span>Min 4 Pcs</span><span>Reserve Your Box</span><span>Pre-Order Only</span><span>Simply FYN</span>
-      <span>Freshly Baked</span><span>New York Style</span><span>Min 4 Pcs</span><span>Reserve Your Box</span><span>Pre-Order Only</span><span>Simply FYN</span>
+      <span>One bite is never enough</span><span>Dangerously delicious</span><span>Crime: stealing everyone&#39;s hearts</span><span>His replies were dry, ours aren&#39;t</span><span>Your sign to order the cookie</span><span>Freshly baked</span>
+      <span>One bite is never enough</span><span>Dangerously delicious</span><span>Crime: stealing everyone&#39;s hearts</span><span>His replies were dry, ours aren&#39;t</span><span>Your sign to order the cookie</span><span>Freshly baked</span>
     </div>
   </div>
 
@@ -988,6 +1017,8 @@ grid.addEventListener("click", e => {
     if (dir > 0) {
       const card = stepper.closest(".card");
       if (card) { card.classList.remove("is-added"); void card.offsetWidth; card.classList.add("is-added"); }
+      const navLogo = document.querySelector(".nav__logo");
+      if (navLogo) { navLogo.classList.remove("is-chomping"); void navLogo.offsetWidth; navLogo.classList.add("is-chomping"); }
     }
   }
 });
