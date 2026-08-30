@@ -1,0 +1,10 @@
+# Run the FYN site locally:   docker compose up -d
+# Then open:                  http://localhost:8080
+# Stop it again:              docker compose down
+services:
+  fyn:
+    build: .
+    container_name: fyn-site
+    ports:
+      - "8080:80"
+    restart: unless-stopped
