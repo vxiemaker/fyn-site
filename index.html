@@ -465,6 +465,28 @@ body.menu-open { overflow: hidden; }
   .receipt__row .item { font-size: 0.88rem; }
   .rrm { width: 20px; height: 20px; font-size: 1rem; }
 }
+/* Where is it going. Priced per area, so this has to be answered. */
+.receipt__deliver { margin-top: 0.9rem; }
+.receipt__deliver-label { display: block; font-size: 0.64rem; letter-spacing: 0.12em;
+  text-transform: uppercase; font-weight: 800; color: var(--ink-soft); margin-bottom: 0.5rem; }
+.receipt__areas { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.area-btn {
+  font-family: "Archivo", sans-serif; font-weight: 800; font-size: 0.78rem;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0.5em 0.9em; border-radius: 100px;
+  border: 2.5px solid var(--ink); background: var(--cream); color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  display: inline-flex; align-items: baseline; gap: 0.45em;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease),
+              background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.area-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--red); }
+.area-btn:active { transform: none; box-shadow: 2px 2px 0 var(--ink); }
+.area-btn[aria-checked="true"] { background: var(--red); color: #fff; box-shadow: 3px 3px 0 var(--ink); }
+.area-btn .fee { font-family: "Anton", sans-serif; font-size: 0.95rem;
+  font-variant-numeric: tabular-nums; color: var(--red); }
+.area-btn[aria-checked="true"] .fee { color: #fff; }
 .receipt__empty { padding: 1.1rem 0 1.3rem; text-align: center; color: var(--ink-soft); font-weight: 600;
   display: grid; justify-items: center; gap: 0.55rem; }
 .receipt__mascot { display: block; width: 84px; aspect-ratio: 350 / 600;
@@ -802,6 +824,11 @@ body.menu-open { overflow: hidden; }
           <hr class="receipt__hr" />
           <div class="receipt__cols"><span>Qty</span><span>Item</span><span class="amt">Amount</span><span aria-hidden="true"></span></div>
           <div class="receipt__rows" id="receiptRows"></div>
+          <hr class="receipt__hr" />
+          <div class="receipt__deliver">
+            <span class="receipt__deliver-label" id="areaLabel">Deliver to</span>
+            <div class="receipt__areas" id="areaPicker" role="radiogroup" aria-labelledby="areaLabel"></div>
+          </div>
           <div class="receipt__totals">
             <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
             <div class="receipt__line"><span>Delivery</span><span id="rDel">$0.00</span></div>
@@ -927,7 +954,7 @@ body.menu-open { overflow: hidden; }
         </details>
         <details>
           <summary>How much is delivery?</summary>
-          <p>Delivery is $2. Pickup is also an option. Just tell us which you’d prefer when you send your order.</p>
+          <p>It depends on where you are. Tripoli is $2 and Beirut is $5. Pick your area in the box builder above and it adds to your total. Somewhere else, or want to pick up instead? Message us and we’ll sort it out.</p>
         </details>
         <details>
           <summary>Where do you deliver?</summary>
@@ -1119,14 +1146,38 @@ renderMenu();
    CART / RECEIPT - build a box, live totals, delivery fee, minimum order
    ============================================================================ */
 /* SETTINGS:START */
-let DELIVERY = 2;            // delivery fee (USD) - editable in the admin panel
+let AREAS = [
+  { name: "Tripoli", fee: 2 },
+  { name: "Beirut", fee: 5 }
+];
 let MIN_PCS = 4;             // minimum pieces per order - editable in the admin panel
 /* SETTINGS:END */
+let areaIdx = null;          // nothing assumed: the customer has to say where
 let priceMap = {};
 function rebuildPrices(){ priceMap = {}; MENU.forEach(m => { if (!m.soon) priceMap[m.name] = m.num; }); }
 rebuildPrices();
 const cart = {};             // name -> qty
 const money = n => "$" + n.toFixed(2);
+
+const areaPicker = document.getElementById("areaPicker");
+const currentArea = () => (areaIdx == null ? null : AREAS[areaIdx] || null);
+const deliveryFee = () => { const a = currentArea(); return a ? a.fee : 0; };
+
+function renderAreas() {
+  areaPicker.innerHTML = AREAS.map((a, i) => `
+    <button class="area-btn" type="button" role="radio" data-i="${i}"
+            aria-checked="${i === areaIdx ? "true" : "false"}">
+      <span>${esc(a.name)}</span><span class="fee">${money(a.fee)}</span>
+    </button>`).join("");
+}
+
+areaPicker.addEventListener("click", e => {
+  const btn = e.target.closest(".area-btn");
+  if (!btn) return;
+  areaIdx = +btn.getAttribute("data-i");
+  renderAreas();
+  renderCart();
+});
 
 const receiptRows = document.getElementById("receiptRows");
 const rSub = document.getElementById("rSub");
@@ -1141,10 +1192,13 @@ const cartLines = () => Object.keys(cart).filter(n => cart[n] > 0)
 const totalQty = () => Object.keys(cart).reduce((s, n) => s + cart[n], 0);
 
 function orderText(lines, sub, del, total) {
+  const a = currentArea();
   let t = "FYN order 🍪\n";
   lines.forEach(l => { t += `${l.qty}× ${l.name} - ${money(l.amt)}\n`; });
-  t += `-----\nSubtotal: ${money(sub)}\nDelivery: ${money(del)}\nTotal: ${money(total)}`;
-  t += `\n\nName:\nDelivery area:\nPickup or delivery:`;
+  t += `-----\nSubtotal: ${money(sub)}`;
+  t += `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
+  t += `\nTotal: ${money(total)}`;
+  t += `\n\nName:\nAddress:`;
   return t;
 }
 
@@ -1152,7 +1206,7 @@ function renderCart() {
   const lines = cartLines();
   const sub = lines.reduce((s, l) => s + l.amt, 0);
   const qty = totalQty();
-  const del = lines.length ? DELIVERY : 0;
+  const del = lines.length ? deliveryFee() : 0;
   const total = sub + del;
 
   receiptRows.innerHTML = lines.length
@@ -1169,10 +1223,13 @@ function renderCart() {
     rTotal.classList.add("is-bump");
   }
 
-  const ok = qty >= MIN_PCS;
+  const a = currentArea();
+  const enough = qty >= MIN_PCS;
+  const ok = enough && !!a;
   if (qty === 0) rNote.textContent = `Min order ${MIN_PCS} pcs`;
-  else if (!ok) rNote.textContent = `Add ${MIN_PCS - qty} more, min ${MIN_PCS} pcs`;
-  else rNote.textContent = `${qty} pcs, you’re good to go!`;
+  else if (!enough) rNote.textContent = `Add ${MIN_PCS - qty} more, min ${MIN_PCS} pcs`;
+  else if (!a) rNote.textContent = "Pick where it is going";
+  else rNote.textContent = `${qty} pcs to ${a.name}, you’re good to go!`;
 
   cartWa.classList.toggle("is-disabled", !ok);
   cartIg.classList.toggle("is-disabled", !ok);
@@ -1212,7 +1269,7 @@ cartIg.addEventListener("click", () => {
   if (cartIg.classList.contains("is-disabled")) return;
   const lines = cartLines();
   const sub = lines.reduce((s, l) => s + l.amt, 0);
-  const del = lines.length ? DELIVERY : 0;
+  const del = lines.length ? deliveryFee() : 0;
   const txt = orderText(lines, sub, del, sub + del);
   const openDM = () => window.open(igHref, "_blank", "noopener");
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1223,6 +1280,7 @@ cartIg.addEventListener("click", () => {
   } else { openDM(); }
 });
 
+renderAreas();
 renderCart();
 
 /* Adjust the box straight from the receipt lines */
@@ -1349,7 +1407,7 @@ function toast(msg) {
 /* ---- persistence -------------------------------------------------------- */
 function saveLocal() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, delivery: DELIVERY, minPcs: MIN_PCS }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, areas: AREAS, minPcs: MIN_PCS }));
   } catch (e) { toast("Couldn’t save on this device"); }
 }
 function loadLocal() {
@@ -1359,7 +1417,8 @@ function loadLocal() {
     const data = JSON.parse(raw);
     if (data && Array.isArray(data.menu) && data.menu.length) {
       MENU = data.menu;
-      if (typeof data.delivery === "number") DELIVERY = data.delivery;
+      if (Array.isArray(data.areas) && data.areas.length) AREAS = data.areas;
+      else if (typeof data.delivery === "number") AREAS = [{ name: "Delivery", fee: data.delivery }];
       if (typeof data.minPcs === "number") MIN_PCS = data.minPcs;
       return true;
     }
@@ -1371,7 +1430,9 @@ function loadLocal() {
 function applyChanges() {
   rebuildPrices();
   Object.keys(cart).forEach(n => { if (!(n in priceMap)) delete cart[n]; });
+  if (areaIdx != null && !AREAS[areaIdx]) areaIdx = null;
   renderMenu();
+  renderAreas();
   renderCart();
   saveLocal();
 }
@@ -1390,14 +1451,26 @@ function renderAdmin() {
       <div class="adm-item__top"><span class="adm-item__idx">Shop settings</span></div>
       <div class="adm-row">
         <div class="adm-field">
-          <label for="admDelivery">Delivery fee ($)</label>
-          <input id="admDelivery" type="number" min="0" step="0.5" value="${DELIVERY}" />
-        </div>
-        <div class="adm-field">
           <label for="admMin">Minimum pieces</label>
           <input id="admMin" type="number" min="1" step="1" value="${MIN_PCS}" />
         </div>
       </div>
+      <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Delivery areas</label>
+      <div id="admAreas">
+        ${AREAS.map((a, i) => `
+          <div class="adm-row" data-area="${i}" style="align-items:end;">
+            <div class="adm-field">
+              <label>Area</label>
+              <input data-af="name" type="text" value="${String(a.name).replace(/"/g, "&quot;")}" />
+            </div>
+            <div class="adm-field">
+              <label>Fee ($)</label>
+              <input data-af="fee" type="number" min="0" step="0.5" value="${a.fee}" />
+            </div>
+            <button class="adm-btn adm-btn--danger" data-area-del="${i}" type="button" style="align-self:end;">Remove</button>
+          </div>`).join("")}
+      </div>
+      <button class="adm-btn" id="admAreaAdd" type="button">+ Add an area</button>
     </div>`;
 
   const items = MENU.map((m, i) => `
@@ -1453,10 +1526,34 @@ function renderAdmin() {
   });
 
   // settings
-  const dEl = document.getElementById("admDelivery");
   const mEl = document.getElementById("admMin");
-  dEl.addEventListener("input", () => { DELIVERY = Math.max(0, parseFloat(dEl.value) || 0); applyChanges(); });
   mEl.addEventListener("input", () => { MIN_PCS = Math.max(1, parseInt(mEl.value, 10) || 1); applyChanges(); });
+
+  // delivery areas
+  const areasBox = document.getElementById("admAreas");
+  areasBox.querySelectorAll("[data-area]").forEach(row => {
+    const i = +row.getAttribute("data-area");
+    row.querySelectorAll("[data-af]").forEach(input => {
+      input.addEventListener("input", () => {
+        const f = input.getAttribute("data-af");
+        AREAS[i][f] = f === "fee" ? Math.max(0, parseFloat(input.value) || 0) : input.value;
+        applyChanges();
+      });
+    });
+  });
+  areasBox.addEventListener("click", e => {
+    const del = e.target.closest("[data-area-del]");
+    if (!del) return;
+    if (AREAS.length <= 1) { toast("Keep at least one area"); return; }
+    AREAS.splice(+del.getAttribute("data-area-del"), 1);
+    areaIdx = null;
+    applyChanges(); renderAdmin(); toast("Area removed");
+  });
+  document.getElementById("admAreaAdd").addEventListener("click", () => {
+    AREAS.push({ name: "New area", fee: 0 });
+    applyChanges(); renderAdmin();
+    toast("Area added. Edit the name and fee");
+  });
 }
 
 /* item actions (photo / reorder / delete) */
@@ -1534,7 +1631,7 @@ admEls.exportBtn.addEventListener("click", async () => {
     // from ending the script block in the exported file.
     const safeJson = JSON.stringify(MENU, null, 2).replace(/<\//g, "<\\/");
     const menuBlock = "/* MENU:START */\nlet MENU = " + safeJson + ";\n/* MENU:END */";
-    const setBlock = "/* SETTINGS:START */\nlet DELIVERY = " + DELIVERY + ";\nlet MIN_PCS = " + MIN_PCS + ";\n/* SETTINGS:END */";
+    const setBlock = "/* SETTINGS:START */\nlet AREAS = " + JSON.stringify(AREAS, null, 2).replace(/<\//g, "<\\/") + ";\nlet MIN_PCS = " + MIN_PCS + ";\n/* SETTINGS:END */";
 
     const menuRe = /\/\* MENU:START \*\/[\s\S]*?\/\* MENU:END \*\//;
     const setRe = /\/\* SETTINGS:START \*\/[\s\S]*?\/\* SETTINGS:END \*\//;
