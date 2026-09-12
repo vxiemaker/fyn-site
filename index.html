@@ -1494,6 +1494,41 @@ if ("IntersectionObserver" in window && !reduceMotion) {
 }
 
 /* ============================================================================
+   WALL FILL
+   A wall has to cover whatever height its block turns out to be, and that
+   changes with the viewport, so the line count is measured rather than fixed.
+   ============================================================================ */
+function fillWalls() {
+  document.querySelectorAll(".wordwall").forEach(wall => {
+    const inner = wall.querySelector(".wordwall__inner");
+    const probe = inner && inner.firstElementChild;
+    if (!probe) return;
+    const word = inner.getAttribute("data-word") || probe.textContent;
+    inner.setAttribute("data-word", word);
+    const lineH = probe.getBoundingClientRect().height;
+    if (!lineH) return;
+    const need = Math.ceil(wall.getBoundingClientRect().height / lineH) + 2;
+    let have = inner.children.length;
+    if (need > have) {
+      const frag = document.createDocumentFragment();
+      for (let i = have; i < need; i++) {
+        const span = document.createElement("span");
+        span.textContent = word;
+        frag.appendChild(span);
+      }
+      inner.appendChild(frag);
+    } else {
+      while (inner.children.length > need) inner.lastElementChild.remove();
+    }
+  });
+}
+fillWalls();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fillWalls);
+window.addEventListener("load", fillWalls);
+let fillTimer = null;
+window.addEventListener("resize", () => { clearTimeout(fillTimer); fillTimer = setTimeout(fillWalls, 180); });
+
+/* ============================================================================
    OFF-SCREEN LOOPS
    The marquees, the stamp and the mascot animate forever. Off screen that is
    compositor work spent on pixels nobody can see, so it stops.

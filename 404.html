@@ -128,5 +128,30 @@ p.lead { margin: 0 0 1.7rem; max-width: 40ch; color: var(--ink-soft); font-weigh
   </div>
   <div class="mascot" role="img" aria-label="The FYN mascot, mid-bite"></div>
 </main>
+<script>
+/* The wall covers the viewport, and the viewport is not a fixed height, so the
+   line count is measured rather than assumed. */
+function fillWall() {
+  var inner = document.querySelector(".wordwall__inner");
+  var probe = inner && inner.firstElementChild;
+  if (!probe) return;
+  var word = inner.getAttribute("data-word") || probe.textContent;
+  inner.setAttribute("data-word", word);
+  var lineH = probe.getBoundingClientRect().height;
+  if (!lineH) return;
+  var need = Math.ceil(document.querySelector(".wordwall").getBoundingClientRect().height / lineH) + 2;
+  while (inner.children.length < need) {
+    var s = document.createElement("span");
+    s.textContent = word;
+    inner.appendChild(s);
+  }
+  while (inner.children.length > need) inner.lastElementChild.remove();
+}
+fillWall();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fillWall);
+window.addEventListener("load", fillWall);
+var wallTimer = null;
+window.addEventListener("resize", function () { clearTimeout(wallTimer); wallTimer = setTimeout(fillWall, 180); });
+</script>
 </body>
 </html>

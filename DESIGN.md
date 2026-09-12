@@ -307,6 +307,7 @@ components:
     transform: "rotate(-3deg) scale(1.02)"
     stagger: "every second line -7%, every third +5%"
     clipping: "an outer box clips, an inner box rotates, so no section needs overflow hidden"
+    fill: "line count is measured per block at load, after fonts, and on resize, never a fixed number"
     words:
       hero: "New York"
       cookies: "Simply FYN"
@@ -454,6 +455,12 @@ Rules that matter:
   to fill.
   It only works if the line is wide enough to run past both edges: sized to fit,
   it reads as stray letterforms instead of as the word.
+- **A wall never carries a fixed number of lines.** Block heights change with
+  the viewport, and they change against the type rather than with it: on a phone
+  the sections grow taller while the type shrinks, so any count that covers a
+  block on a desktop leaves bare ground on a phone. Six fixed lines left 768px
+  of empty ground at each end of the menu section. The count is measured per
+  block instead, at load, after the fonts land and on resize.
 - **The side margins carry vertical rail text above 1400px.** At 1920 the
   container leaves 370px of empty ground on each side, which is 38% of the
   screen doing nothing. The rails disappear below 1400px so a phone never sees
