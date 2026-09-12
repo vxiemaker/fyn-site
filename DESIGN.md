@@ -362,7 +362,7 @@ components:
 
 FYN looks like a screen-printed poster that got taped to a bakery window. The atmosphere is warm, loud and hand-made: scarlet on cream paper, thick ink outlines, hard offset shadows with no blur, and everything sitting a degree or two off-square as though it were placed by hand rather than positioned by a layout engine.
 
-The defining move is that **no surface is flat digital colour**. A crumpled-paper JPEG tiles at 220px behind every section and blends in `multiply`, and a fixed SVG turbulence grain sits over the whole page at 5% opacity. Cream is never `#efe6cb` exactly on screen. It is that colour multiplied through paper fibre.
+The defining move is that **no surface is flat digital colour**. A crumpled-paper JPEG tiles at 220px behind every section and blends in `multiply`, so cream is never `#efe6cb` exactly on screen. It is that colour multiplied through paper fibre.
 
 The second defining move is that **elevation is print, not material**. Nothing uses a soft drop shadow to float. Cards, buttons, photo frames and the receipt all carry a 3px near-black outline and a zero-blur offset shadow, so they read as die-cut stickers laid on paper. Hover does not raise a card with blur; it slides the card up-left by 3px and swaps the ink shadow for a scarlet one, like a second print pass slightly out of register.
 
@@ -431,12 +431,18 @@ Rules that matter:
 
 ## 5. Layout Principles
 
-- **The background runs three layers and no more.** Paper texture at 220px, a
-  fixed grain overlay at 5%, and a wall of repeated type. Everything back there
-  stays at or under 11% opacity, because above that it starts fighting the
-  grain rather than sitting under it. Two faint layers stacked in one section
-  is mud, which is why the order section's mascot watermark gave way to its
-  wall rather than keeping both.
+- **The background runs two layers and no more.** Paper texture at 220px and a
+  wall of repeated type, which stays at or under 11% opacity. Two faint layers
+  stacked in one section is mud, which is why the order section's mascot
+  watermark gave way to its wall rather than keeping both.
+- **No `mix-blend-mode` anywhere on the page, and nothing fixed that is not a
+  control.** A full-viewport fixed layer with a blend mode makes the compositor
+  re-blend the whole screen every scrolled frame, and the page used to carry
+  exactly that as a grain overlay. Differencing screenshots with it on and off
+  put the change at a mean of 1.5 out of 255, with not one pixel differing by a
+  noticeable amount, because the paper texture was already doing the job. It
+  was removed. The footer keeps a grain of its own, but that one is static,
+  scoped to the footer and not blended.
 - **The wall of type is FYN's own device, not a borrowed one.** Their feed
   already sets the product name in heavy repeated tone-on-tone type behind the
   cookie, cropped by the frame. Every block on the site carries one, head to
