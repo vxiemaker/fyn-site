@@ -301,6 +301,13 @@ components:
     backgroundColor: "{colors.footer-canvas}"
     textColor: "{colors.footer-ink}"
     brandColor: "{colors.primary}"
+  mascot-head:
+    usage: "nav, hero and footer lockups beside the wordmark"
+    note: "90x82 crop; a full body collapses to nothing at 38px"
+  mascot-full:
+    usage: "empty receipt, the sticker on the story seam, the 404 page, the share card"
+    treatment: "transparent cut-out placed on the page, never boxed in a frame"
+    inlined: "once, as {colors} sibling token --mascot, referenced by both in-page uses"
 ---
 
 # Design System: FYN
@@ -362,7 +369,7 @@ Rules that matter:
 - **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°) so they read as hand-slapped stickers rather than a component instance.
 - **The receipt** is the centrepiece and behaves like real paper: gold ticket stripe across the top, dashed rules, a radial-punch perforation along the bottom edge, monospaced-feel tabular figures. Every line is editable in place with a −/+ pill and an ✕.
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
-- **Empty state**: the receipt says "Your box is empty. Add some cookies above 👆" rather than rendering an empty table.
+- **Empty state**: the mascot stands in the receipt as a transparent cut-out with "Your box is empty. Add some cookies above." beneath him, rather than rendering an empty table. He is replaced by the line items the moment anything is added, so he never competes with content.
 - **Marquees**: two, both built the same way: duplicate the set exactly, translate the track −50%, give every item identical margin so the loop has no seam. The text band runs 26s, the photo strip 46s behind a soft mask. Both pause on hover and focus.
 - **Nav**: transparent over the hero, then on scroll picks up a translucent cream fill, a blur, and a 2px ink underline. Mobile is a full-height drawer with centred Anton links and socials pinned to the bottom.
 
@@ -397,14 +404,15 @@ Rules that matter:
 - Stock photography of cookies. Only FYN's own photos.
 - Three equal cards in a row.
 - A centred hero.
-- Stacking the phone hero photo above the text.
+- Stacking the phone hero photo above the text
+- The character boxed inside a framed tile next to product photography. He is a cut-out laid on the page, not a picture in a frame.
 - Straight quotes and apostrophes.
 - Non-tabular figures anywhere a number changes.
 - Title Case on headings and buttons. This site is sentence case, deliberately.
 - Em dashes and en dashes. The copy uses neither, on purpose.
 - AI copy tells: "Elevate", "Seamless", "Unleash", "Next-Gen", "Delve".
 
-**Deliberate deviations from the generic taste rules:** FYN uses two emoji (🍪 in the pre-filled WhatsApp message, 👆 in the empty receipt) because the brand voice is playful and they appear in conversational contexts, not as UI iconography. Everything else on the standard ban list holds.
+**Deliberate deviations from the generic taste rules:** FYN uses one emoji, the 🍪 in the pre-filled WhatsApp message, because that is a chat message rather than UI iconography and the brand voice is playful. Everything else on the standard ban list holds.
 
 ## 8. Implementation Notes
 

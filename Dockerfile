@@ -12,7 +12,7 @@ RUN printf '%s\n' \
   'gzip_types text/plain text/css application/javascript application/xml image/svg+xml;' \
   > /etc/nginx/conf.d/gzip.conf
 
-COPY index.html /usr/share/nginx/html/
+COPY index.html 404.html /usr/share/nginx/html/
 COPY icon.png og.jpg robots.txt sitemap.xml /usr/share/nginx/html/
 COPY gram/ /usr/share/nginx/html/gram/
 
