@@ -301,6 +301,17 @@ components:
     separator: "{borders.hairline}"
     marker: "plus / minus glyph in {colors.primary}"
     hover: "summary turns {colors.primary}, no box to tint"
+  wordwall:
+    type: "Anton uppercase, clamp(3.5rem, 20vw, 21rem), line-height 0.94"
+    color: "{colors.ink} at 7% opacity"
+    transform: "rotate(-3deg) scale(1.02)"
+    stagger: "every second line -7%, every third +5%"
+    note: "sized to overflow the viewport so the frame crops it, which is what makes it read as the word rather than as fragments"
+  margin-rail:
+    type: "Archivo 800, 0.7rem, 0.34em tracking, vertical-rl"
+    color: "{colors.ink-soft} at 42% opacity"
+    shownAbove: 1400px
+    note: "the side margins run 370px each at 1920"
   top-nav:
     height: 72px
     backgroundColor: transparent
@@ -408,6 +419,20 @@ Rules that matter:
 
 ## 5. Layout Principles
 
+- **The background runs four layers and no more.** Paper texture at 220px, a
+  fixed grain overlay at 5%, the mascot watermark at 6% in the order section,
+  and a wall of repeated type at 7% behind the box builder. Everything back
+  there stays under 8% opacity, because above that it starts fighting the
+  grain rather than sitting under it.
+- **The wall of type is FYN's own device, not a borrowed one.** Their feed
+  already sets the product name in heavy repeated tone-on-tone type behind the
+  cookie, cropped by the frame. The site uses the same move behind the receipt.
+  It only works if the line is wide enough to run past both edges: sized to fit,
+  it reads as stray letterforms instead of as the word.
+- **The side margins carry vertical rail text above 1400px.** At 1920 the
+  container leaves 370px of empty ground on each side, which is 38% of the
+  screen doing nothing. The rails disappear below 1400px so a phone never sees
+  them.
 - **The page alternates tone on purpose.** Top to bottom: cream hero, scarlet
   marquee, cream menu, scarlet story, cream gallery, deep cream order,
   cream FAQ, ink footer. Three cream sections in a row is the

@@ -341,6 +341,48 @@ body.menu-open { overflow: hidden; }
 .section--red .eyebrow::before { color: var(--ink); }
 
 /* ============================================================================
+   BACKGROUND LAYERS
+   Both ride under the paper texture and the 5% grain, so they stay faint.
+   ============================================================================ */
+
+/* FYN's own poster device: the name repeated tone on tone, staggered, and
+   cropped by the frame. Sits behind the box builder. */
+.wordwall {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 78%;
+  z-index: 0; pointer-events: none; overflow: hidden;
+  display: grid; align-content: center; justify-content: center;
+  transform: rotate(-3deg) scale(1.02);
+  opacity: 0.07;
+}
+.wordwall span {
+  font-family: "Anton", sans-serif; text-transform: uppercase; white-space: nowrap;
+  /* sized to run past both edges so the frame crops it, the way their post does */
+  font-size: clamp(3.5rem, 20vw, 21rem); line-height: 0.94; letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.wordwall span:nth-child(even) { margin-left: -7%; }
+.wordwall span:nth-child(3n)   { margin-left: 5%; }
+
+/* The side margins run 370px each at 1920, so put something in them. */
+.rail { display: none; }
+@media (min-width: 1400px) {
+  .rail {
+    display: block; position: absolute; top: 0; bottom: 0; width: 1px;
+    z-index: 0; pointer-events: none;
+  }
+  .rail--l { left: calc((100% - var(--maxw)) / 2 - 2.6rem); }
+  .rail--r { right: calc((100% - var(--maxw)) / 2 - 2.6rem); }
+  .rail span {
+    position: absolute; top: 50%; writing-mode: vertical-rl;
+    white-space: nowrap; font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--ink-soft); opacity: 0.42;
+  }
+  .rail--l span { transform: translateY(-50%) rotate(180deg); }
+  .rail--r span { transform: translateY(-50%); }
+}
+
+/* ============================================================================
    MENU CARDS
    ============================================================================ */
 .menu-note { display: inline-flex; align-items: center; gap: 0.6em; margin-top: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.82rem; color: var(--red-deep); }
@@ -348,7 +390,9 @@ body.menu-open { overflow: hidden; }
 /* Phone mirrors the desktop grid (2-up), widening to 3-up on desktop */
 .cookies { display: grid; gap: clamp(0.7rem, 3vw, 1.75rem); grid-template-columns: repeat(2, 1fr); margin-top: clamp(2rem,5vw,3.5rem); }
 /* extra breathing room before the red story band */
-#cookies { padding-bottom: calc(var(--section-y) + 2.5rem); }
+#cookies { padding-bottom: calc(var(--section-y) + 2.5rem); position: relative; overflow: hidden; }
+#gram { position: relative; }
+#cookies > .container, #gram > .container { position: relative; z-index: 1; }
 @media (min-width: 960px) { .cookies { grid-template-columns: repeat(4, 1fr); } }
 
 .card {
@@ -838,6 +882,11 @@ body.menu-open { overflow: hidden; }
 
   <!-- ========================= THE COOKIES ========================= -->
   <section class="section" id="cookies" aria-labelledby="cookiesTitle">
+    <div class="wordwall" aria-hidden="true">
+      <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
+      <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
+    </div>
+    <div class="rail rail--l" aria-hidden="true"><span>Simply FYN &middot; Min 4 pcs &middot; Pre-order only &middot; Freshly baked</span></div>
     <div class="container">
       <div class="section__head reveal">
         <p class="eyebrow">The Menu</p>
@@ -917,6 +966,7 @@ body.menu-open { overflow: hidden; }
 
   <!-- ========================= FROM THE GRAM ========================= -->
   <section class="section" id="gram" aria-labelledby="gramTitle">
+    <div class="rail rail--r" aria-hidden="true"><span>New York style &middot; Stuffed &middot; Lebanon &middot; @fyn.lb</span></div>
     <div class="container">
       <div class="section__head section__head--center reveal">
         <p class="eyebrow eyebrow--center">Straight from the feed</p>
