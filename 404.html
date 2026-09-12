@@ -34,6 +34,20 @@ body {
   -webkit-font-smoothing: antialiased;
   padding: clamp(2rem, 6vw, 4rem) clamp(1.25rem, 5vw, 3rem);
 }
+.wordwall { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.wordwall__inner {
+  position: absolute; inset: -8% -3%;
+  display: grid; align-content: center; justify-content: center;
+  transform: rotate(-3deg) scale(1.02); opacity: 0.07;
+}
+.wordwall span {
+  font-family: "Anton", sans-serif; text-transform: uppercase; white-space: nowrap;
+  font-size: clamp(3.5rem, 20vw, 21rem); line-height: 0.94; letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.wordwall span:nth-child(even) { margin-left: -7%; }
+.wordwall span:nth-child(3n)   { margin-left: 5%; }
+.wrap { position: relative; z-index: 1; }
 .grain {
   position: fixed; inset: 0; z-index: 99; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -101,6 +115,10 @@ p.lead { margin: 0 0 1.7rem; max-width: 40ch; color: var(--ink-soft); font-weigh
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
+<div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+  <span>Nothing Here</span><span>Nothing Here</span><span>Nothing Here</span>
+  <span>Nothing Here</span><span>Nothing Here</span><span>Nothing Here</span>
+</div></div>
 <main class="wrap">
   <div>
     <p class="eyebrow">Nothing baking here</p>

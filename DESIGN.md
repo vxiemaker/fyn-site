@@ -314,6 +314,10 @@ components:
       gram: "Follow @fyn.lb"
       order: "Message Us"
       faq: "Good to Know"
+      footer: "Thank You"
+      mobile-drawer: "Simply FYN"
+      404: "Nothing Here"
+    excluded: "the nav at 72px and the hype band at 50px, which are type already and have no room behind them"
     note: "sized to overflow the viewport so the frame crops it, which is what makes it read as the word rather than as fragments"
   margin-rail:
     type: "Archivo 800, 0.7rem, 0.34em tracking, vertical-rl"
@@ -435,9 +439,13 @@ Rules that matter:
   wall rather than keeping both.
 - **The wall of type is FYN's own device, not a borrowed one.** Their feed
   already sets the product name in heavy repeated tone-on-tone type behind the
-  cookie, cropped by the frame. Every section carries one, and each says
-  something different: the hero does not repeat the word already set at 224px
-  above it, and the fine print section says so.
+  cookie, cropped by the frame. Every block on the site carries one, head to
+  toe: the six sections, the footer, the mobile drawer and the 404 page. Each
+  says something different. The hero does not repeat the word already set at
+  224px above it, the fine print section says so, and the footer says thank you,
+  which is the one thing the site never said anywhere else. The nav and the hype
+  band stay out, at 72px and 50px they are type already with nothing behind them
+  to fill.
   It only works if the line is wide enough to run past both edges: sized to fit,
   it reads as stray letterforms instead of as the word.
 - **The side margins carry vertical rail text above 1400px.** At 1920 the

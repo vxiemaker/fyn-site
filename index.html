@@ -189,7 +189,10 @@ p, .section__intro, .hero__tagline, .card__desc { text-wrap: pretty; }
   overflow-y: auto; overscroll-behavior: contain;
   transform: translateY(-10px); opacity: 0; visibility: hidden;
   transition: transform 0.32s var(--ease), opacity 0.32s var(--ease), visibility 0.32s;
+  position: fixed;
 }
+.mobile-menu > .wordwall { position: absolute; }
+.mobile-menu__links, .mobile-menu__social, .mobile-menu__note { position: relative; z-index: 1; }
 .mobile-menu.is-open { transform: translateY(0); opacity: 1; visibility: visible; }
 .mobile-menu__links {
   flex: 1; display: flex; flex-direction: column;
@@ -367,6 +370,10 @@ body.menu-open { overflow: hidden; }
 .section--red .wordwall__inner { opacity: 0.11; }
 /* The hero already shouts the wordmark, so its wall says something else and sits back. */
 .hero .wordwall__inner { opacity: 0.05; }
+/* Ink on ink is nothing, so the footer wall is paper and sits under the grain. */
+.footer .wordwall span { color: var(--cream); }
+.footer .wordwall__inner { opacity: 0.055; }
+.mobile-menu .wordwall__inner { opacity: 0.06; }
 .hero, #gram, #faq { position: relative; }
 .hero > .container, #faq > .container { position: relative; z-index: 1; }
 .story--red > .container { position: relative; z-index: 1; }
@@ -821,6 +828,9 @@ body.menu-open { overflow: hidden; }
   </div>
 </header>
 <div class="mobile-menu" id="mobileMenu">
+  <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+      <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
+    </div></div>
   <nav class="mobile-menu__links" aria-label="Mobile">
     <a href="#cookies">The Cookies</a>
     <a href="#story">Our Story</a>
@@ -1125,6 +1135,9 @@ body.menu-open { overflow: hidden; }
 <div class="adm-toast" id="admToast" role="status" aria-live="polite"></div>
 
 <footer class="footer" aria-labelledby="footTitle">
+    <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+      <span>Thank You</span><span>Thank You</span><span>Thank You</span><span>Thank You</span><span>Thank You</span><span>Thank You</span>
+    </div></div>
   <div class="container">
     <h2 id="footTitle" class="sr-only">Contact &amp; details</h2>
     <div class="footer__top">
