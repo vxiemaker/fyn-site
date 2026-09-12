@@ -317,7 +317,11 @@ components:
   footer:
     backgroundColor: "{colors.footer-canvas}"
     textColor: "{colors.footer-ink}"
-    brandColor: "{colors.primary}"
+    grain: "paper texture on its own layer at 7% screen, never blended into the ink"
+    wordmark: "Anton, clamp(4.5rem, 17vw, 11rem), {colors.canvas} with a 6px {colors.primary} hard shadow"
+    mascot: "full-body cut-out, rotated 4deg, cream keyline via stacked drop-shadows"
+    facts: "four label and value pairs, no link columns"
+    deliveryLine: "rendered from AREAS, so it cannot drift from what the builder charges"
   mascot-head:
     usage: "nav, hero and footer lockups beside the wordmark"
     note: "90x82 crop; a full body collapses to nothing at 38px"
@@ -389,6 +393,17 @@ Rules that matter:
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
 - **Empty state**: the mascot stands in the receipt as a transparent cut-out with "Your box is empty. Add some cookies above." beneath him, rather than rendering an empty table. He is replaced by the line items the moment anything is added, so he never competes with content.
 - **Marquees**: two, both built the same way: duplicate the set exactly, translate the track −50%, give every item identical margin so the loop has no seam. The text band runs 26s, the photo strip 46s behind a soft mask. Both pause on hover and focus.
+- **The footer is the closing statement, not a link farm.** The hero opens on
+  the wordmark at 224px, so the footer closes on it at poster scale: cream with
+  a scarlet hard shadow on ink, the mascot beside it as a die-cut sticker. His
+  outline and his trousers are both near-black, the same as the ground, so he
+  carries a cream keyline built from stacked drop-shadows or he dissolves. Two
+  columns of links became four label and value pairs, and the delivery line is
+  rendered from the areas rather than typed, so it cannot contradict the
+  builder.
+- **The ink never takes the paper texture directly.** Blending a light texture
+  into near-black turns it to mud. The grain rides on a separate layer at 7%
+  screen instead.
 - **Nav**: transparent over the hero, then on scroll picks up a translucent cream fill, a blur, and a 2px ink underline. Mobile is a full-height drawer with centred Anton links and socials pinned to the bottom.
 
 ## 5. Layout Principles
