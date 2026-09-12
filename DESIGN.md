@@ -288,12 +288,19 @@ components:
     borderBlock: "{borders.frame}"
     typography: "{typography.card-title}"
     animation: "translateX(-50%) 26s linear infinite"
-  faq-item:
-    backgroundColor: "{colors.surface-card}"
+  faq-slip:
+    backgroundColor: "{colors.surface-receipt}"
     border: "{borders.frame}"
     rounded: "{rounded.md}"
-    shadow: "{shadows.hard-control}"
+    shadow: "{shadows.hard}"
+    maxWidth: 620px
+    topStripe: "same gold ticket stripe as the receipt"
+    perforation: "same radial punch as the receipt"
+    note: "it is the fine print, so it is printed like the back of the receipt"
+  faq-item:
+    separator: "{borders.hairline}"
     marker: "plus / minus glyph in {colors.primary}"
+    hover: "summary turns {colors.primary}, no box to tint"
   top-nav:
     height: 72px
     backgroundColor: transparent
@@ -332,7 +339,7 @@ The defining move is that **no surface is flat digital colour**. A crumpled-pape
 
 The second defining move is that **elevation is print, not material**. Nothing uses a soft drop shadow to float. Cards, buttons, photo frames and the receipt all carry a 3px near-black outline and a zero-blur offset shadow, so they read as die-cut stickers laid on paper. Hover does not raise a card with blur; it slides the card up-left by 3px and swaps the ink shadow for a scarlet one, like a second print pass slightly out of register.
 
-Photography carries the brand. Real cookies, real hands, cropped tight enough that the chocolate is the subject. Photos are never square to the grid: the hero figure sits at +1.5°, the story figure at −1.5°.
+Photography carries the brand. Real cookies, real hands, cropped tight enough that the chocolate is the subject. Photos are never square to the grid: the hero figure sits at +1.5°, the story figure at −1.5°. Every photograph lives inside a rounded ink frame, without exception.
 
 ## 2. Colour Palette & Roles
 
@@ -386,6 +393,14 @@ Rules that matter:
 
 ## 5. Layout Principles
 
+- **The page alternates tone on purpose.** Top to bottom: cream hero, scarlet
+  marquee, cream menu, scarlet story, cream gallery, deep cream order,
+  cream FAQ, ink footer. Three cream sections in a row is the
+  failure state this sequence exists to prevent.
+- **Tonal steps carry a 3px ink rule, never a soft fade.** The paper texture
+  re-tiles from the top of each section, so any change of ground without a hard
+  edge shows the seam where the tiles fail to line up. The rule turns that seam
+  into a drawn line.
 - **1180px max container**, gutters `clamp(1.25rem, 5vw, 3rem)`.
 - **Sections are `clamp(4.5rem, 3rem + 8vw, 9rem)` vertically**, with the menu section carrying extra bottom padding so it does not crowd the scarlet band.
 - **The hero is an asymmetric split**, 1.1fr / 0.9fr on desktop. It is never centred.
