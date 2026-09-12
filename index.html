@@ -347,9 +347,9 @@ body.menu-open { overflow: hidden; }
 
 /* FYN's own poster device: the name repeated tone on tone, staggered, and
    cropped by the frame. Sits behind the box builder. */
-.wordwall {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 78%;
-  z-index: 0; pointer-events: none; overflow: hidden;
+.wordwall { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.wordwall__inner {
+  position: absolute; inset: -8% -3%;
   display: grid; align-content: center; justify-content: center;
   transform: rotate(-3deg) scale(1.02);
   opacity: 0.07;
@@ -362,6 +362,14 @@ body.menu-open { overflow: hidden; }
 }
 .wordwall span:nth-child(even) { margin-left: -7%; }
 .wordwall span:nth-child(3n)   { margin-left: 5%; }
+/* Ink at 7% disappears on the scarlet band, so it flips to paper and lifts. */
+.section--red .wordwall span { color: var(--cream); }
+.section--red .wordwall__inner { opacity: 0.11; }
+/* The hero already shouts the wordmark, so its wall says something else and sits back. */
+.hero .wordwall__inner { opacity: 0.05; }
+.hero, #gram, #faq { position: relative; }
+.hero > .container, #faq > .container { position: relative; z-index: 1; }
+.story--red > .container { position: relative; z-index: 1; }
 
 /* The side margins run 370px each at 1920, so put something in them. */
 .rail { display: none; }
@@ -390,7 +398,7 @@ body.menu-open { overflow: hidden; }
 /* Phone mirrors the desktop grid (2-up), widening to 3-up on desktop */
 .cookies { display: grid; gap: clamp(0.7rem, 3vw, 1.75rem); grid-template-columns: repeat(2, 1fr); margin-top: clamp(2rem,5vw,3.5rem); }
 /* extra breathing room before the red story band */
-#cookies { padding-bottom: calc(var(--section-y) + 2.5rem); position: relative; overflow: hidden; }
+#cookies { padding-bottom: calc(var(--section-y) + 2.5rem); position: relative; }
 #gram { position: relative; }
 #cookies > .container, #gram > .container { position: relative; z-index: 1; }
 @media (min-width: 960px) { .cookies { grid-template-columns: repeat(4, 1fr); } }
@@ -481,9 +489,7 @@ body.menu-open { overflow: hidden; }
 /* ============================================================================
    RECEIPT / CART
    ============================================================================ */
-.section--order { position: relative; overflow: hidden; }
-.order-watermark { position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url("data:image/png;base64,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") no-repeat right -6% center; background-size: min(540px, 66%); opacity: 0.06; }
+.section--order { position: relative; }
 .section--order > .container { position: relative; z-index: 1; }
 
 .receipt { scroll-margin-top: 90px; background: var(--receipt); border: 3px solid var(--ink); border-radius: 14px; max-width: 560px;
@@ -833,6 +839,9 @@ body.menu-open { overflow: hidden; }
 <main id="top">
   <!-- ========================= HERO ========================= -->
   <section class="hero" aria-labelledby="heroTitle">
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>New York</span><span>New York</span><span>New York</span><span>New York</span><span>New York</span><span>New York</span>
+      </div></div>
     <div class="container">
       <div class="hero__grid">
         <div class="hero__content">
@@ -882,10 +891,9 @@ body.menu-open { overflow: hidden; }
 
   <!-- ========================= THE COOKIES ========================= -->
   <section class="section" id="cookies" aria-labelledby="cookiesTitle">
-    <div class="wordwall" aria-hidden="true">
-      <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
-      <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
-    </div>
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span><span>Simply FYN</span>
+      </div></div>
     <div class="rail rail--l" aria-hidden="true"><span>Simply FYN &middot; Min 4 pcs &middot; Pre-order only &middot; Freshly baked</span></div>
     <div class="container">
       <div class="section__head reveal">
@@ -941,6 +949,9 @@ body.menu-open { overflow: hidden; }
   <!-- ========================= OUR STORY ========================= -->
   <section class="section section--red story--red" id="story" aria-labelledby="storyTitle">
     <span class="seam-sticker" aria-hidden="true"></span>
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Freshly Baked</span><span>Freshly Baked</span><span>Freshly Baked</span><span>Freshly Baked</span><span>Freshly Baked</span><span>Freshly Baked</span>
+      </div></div>
     <div class="container">
       <div class="story__grid">
         <figure class="story__figure reveal">
@@ -967,6 +978,9 @@ body.menu-open { overflow: hidden; }
   <!-- ========================= FROM THE GRAM ========================= -->
   <section class="section" id="gram" aria-labelledby="gramTitle">
     <div class="rail rail--r" aria-hidden="true"><span>New York style &middot; Stuffed &middot; Lebanon &middot; @fyn.lb</span></div>
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Follow @fyn.lb</span><span>Follow @fyn.lb</span><span>Follow @fyn.lb</span><span>Follow @fyn.lb</span><span>Follow @fyn.lb</span><span>Follow @fyn.lb</span>
+      </div></div>
     <div class="container">
       <div class="section__head section__head--center reveal">
         <p class="eyebrow eyebrow--center">Straight from the feed</p>
@@ -1000,7 +1014,9 @@ body.menu-open { overflow: hidden; }
 
   <!-- ========================= ORDER ========================= -->
   <section class="section section--order section--cream2" id="order" aria-labelledby="orderTitle">
-    <div class="order-watermark" aria-hidden="true"></div>
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Message Us</span><span>Message Us</span><span>Message Us</span><span>Message Us</span><span>Message Us</span><span>Message Us</span>
+      </div></div>
     <div class="container">
       <div class="section__head section__head--center reveal">
         <p class="eyebrow eyebrow--center">Another way</p>
@@ -1031,6 +1047,9 @@ body.menu-open { overflow: hidden; }
   </section>
   <!-- ========================= GOOD TO KNOW ========================= -->
   <section class="section" id="faq" aria-labelledby="faqTitle">
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Good to Know</span><span>Good to Know</span><span>Good to Know</span><span>Good to Know</span><span>Good to Know</span><span>Good to Know</span>
+      </div></div>
     <div class="container">
       <div class="section__head section__head--center reveal">
         <p class="eyebrow eyebrow--center">Good to know</p>

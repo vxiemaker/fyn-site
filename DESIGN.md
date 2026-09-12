@@ -303,9 +303,17 @@ components:
     hover: "summary turns {colors.primary}, no box to tint"
   wordwall:
     type: "Anton uppercase, clamp(3.5rem, 20vw, 21rem), line-height 0.94"
-    color: "{colors.ink} at 7% opacity"
+    color: "{colors.ink} at 7% opacity, {colors.canvas} at 11% on the scarlet band, 5% in the hero"
     transform: "rotate(-3deg) scale(1.02)"
     stagger: "every second line -7%, every third +5%"
+    clipping: "an outer box clips, an inner box rotates, so no section needs overflow hidden"
+    words:
+      hero: "New York"
+      cookies: "Simply FYN"
+      story: "Freshly Baked"
+      gram: "Follow @fyn.lb"
+      order: "Message Us"
+      faq: "Good to Know"
     note: "sized to overflow the viewport so the frame crops it, which is what makes it read as the word rather than as fragments"
   margin-rail:
     type: "Archivo 800, 0.7rem, 0.34em tracking, vertical-rl"
@@ -337,7 +345,7 @@ components:
     usage: "nav, hero and footer lockups beside the wordmark"
     note: "90x82 crop; a full body collapses to nothing at 38px"
   mascot-full:
-    usage: "empty receipt, the sticker on the story seam, the 404 page, the share card"
+    usage: "empty receipt, the sticker on the story seam, the footer, the 404 page, the share card"
     treatment: "transparent cut-out placed on the page, never boxed in a frame"
     inlined: "once, as {colors} sibling token --mascot, referenced by both in-page uses"
 ---
@@ -419,14 +427,17 @@ Rules that matter:
 
 ## 5. Layout Principles
 
-- **The background runs four layers and no more.** Paper texture at 220px, a
-  fixed grain overlay at 5%, the mascot watermark at 6% in the order section,
-  and a wall of repeated type at 7% behind the box builder. Everything back
-  there stays under 8% opacity, because above that it starts fighting the
-  grain rather than sitting under it.
+- **The background runs three layers and no more.** Paper texture at 220px, a
+  fixed grain overlay at 5%, and a wall of repeated type. Everything back there
+  stays at or under 11% opacity, because above that it starts fighting the
+  grain rather than sitting under it. Two faint layers stacked in one section
+  is mud, which is why the order section's mascot watermark gave way to its
+  wall rather than keeping both.
 - **The wall of type is FYN's own device, not a borrowed one.** Their feed
   already sets the product name in heavy repeated tone-on-tone type behind the
-  cookie, cropped by the frame. The site uses the same move behind the receipt.
+  cookie, cropped by the frame. Every section carries one, and each says
+  something different: the hero does not repeat the word already set at 224px
+  above it, and the fine print section says so.
   It only works if the line is wide enough to run past both edges: sized to fit,
   it reads as stray letterforms instead of as the word.
 - **The side margins carry vertical rail text above 1400px.** At 1920 the
