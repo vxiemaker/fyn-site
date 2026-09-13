@@ -1046,7 +1046,7 @@ body.menu-open { overflow: hidden; }
             <span class="receipt__deliver-label" id="areaLabel">Deliver to</span>
             <div class="receipt__areas" id="areaPicker" role="radiogroup" aria-labelledby="areaLabel"></div>
           </div>
-          <div class="receipt__promo" id="promoWrap" hidden>
+          <div class="receipt__promo" id="promoWrap">
             <span class="receipt__deliver-label" id="promoLabel">Got a code?</span>
             <div class="promo">
               <input id="promoCode" type="text" maxlength="24" autocomplete="off"
@@ -1492,7 +1492,8 @@ let AREAS = [
   { name: "Beirut", fee: 5 }
 ];
 let MIN_PCS = 4;             // minimum pieces per order - editable in the admin panel
-/* Discount codes. Empty means the coupon box does not appear on the receipt.
+/* Discount codes. The box on the receipt is always shown; while this list is
+   empty every code typed in is turned away, which is deliberate.
    type "percent" takes that many percent off the subtotal, "amount" takes
    that many dollars off. Delivery is never discounted. */
 let COUPONS = [];
@@ -1518,7 +1519,11 @@ const discountOn = sub => {
 };
 function renderPromo() {
   if (!promoWrap) return;
-  promoWrap.hidden = !COUPONS.length;          // no codes, no box
+  /* The box is always on show, by choice: it tells people codes exist even
+     while none are live. With an empty list nothing can match, so every code
+     typed in is turned away, which is intended and not a bug. It is visible
+     in the markup rather than switched on here, because this only runs when
+     the admin panel changes something. */
   if (!COUPONS.length && promo) { promo = null; }
 }
 
@@ -2145,7 +2150,7 @@ function renderAdmin() {
       <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Discount codes</label>
       <p class="adm-fb__empty" style="margin:0 0 0.4rem;">${COUPONS.length
         ? "Anyone can read these in the page source, so treat them as public."
-        : "No codes yet, so the box does not appear on the receipt. Add one and it does."}</p>
+        : "No codes yet. The box still shows on the receipt, and every code typed in is turned away until you add one here."}</p>
       <div id="admCoupons">
         ${COUPONS.map((c, i) => `
           <div class="adm-row" data-coupon="${i}" style="align-items:end;">
