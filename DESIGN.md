@@ -463,6 +463,17 @@ Rules that matter:
   locked until they are there. The note names the one thing still missing
   rather than a generic error: add your name, add your address. Pickup has
   nowhere to deliver to, so that field hides itself and stops being required.
+- **Instagram cannot pre-fill a DM, so the order is copied instead.** There
+  is no `?text=` for an Instagram message the way there is for `wa.me`,
+  and the services that claim otherwise work by routing the customer
+  through their own server, which would put names and addresses through an
+  unvetted third party and break the site's one useful property, that it
+  talks to nobody. So the button writes the order to the clipboard and
+  opens `ig.me/m/<handle>`, which lands in the conversation rather than on
+  the profile, leaving one paste. Only the two buttons whose job is to
+  start a conversation use `ig.me`; the social icons, the footer handle and
+  the gallery tiles point at the profile, because someone tapping those
+  wants the grid, not a compose box.
 - **One channel, behind one switch.** WhatsApp is off and Instagram is the
   whole order route. Everything for WhatsApp is still in the file and still
   wired; every part of it carries `data-wa` and is removed at load while

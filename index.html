@@ -1235,6 +1235,9 @@ const CONFIG = {
   PLACEHOLDER_HOURS:     "Pre-order · Min 4 pcs",
   WHATSAPP_MESSAGE:      "Yo FYN! I’d like to reserve a box 🍪 (min 4 pcs). Here’s what I want:",
 
+  /* First line of the order that gets copied into the DM. Reword freely. */
+  ORDER_OPENER:          "Yo FYN! I’d like to reserve a box 🍪",
+
   /* WhatsApp is off. Everything for it is still here and still wired, just
      removed from the page at load. Set this to true to bring back the order
      button, the channel card, both social icons and the footer link. The
@@ -1292,7 +1295,12 @@ if (!CONFIG.SHOW_WHATSAPP) {
 
 const waHref = `https://wa.me/${CONFIG.PLACEHOLDER_PHONE}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
 const igHref = `https://instagram.com/${CONFIG.PLACEHOLDER_INSTAGRAM}`;
-[["waBtn",waHref],["igBtn",igHref],["menuIg",igHref],["menuWa",waHref],["footWa",waHref],["footIg",igHref],["footIgText",igHref],["footPhoneText",waHref]]
+/* Instagram has no way to pre-fill a DM the way wa.me does, so the order is
+   put on the clipboard instead. ig.me at least opens the conversation itself
+   rather than the profile, which saves the customer hunting for Message.
+   Only the two buttons that exist to start a conversation use it. */
+const igDmHref = `https://ig.me/m/${CONFIG.PLACEHOLDER_INSTAGRAM}`;
+[["waBtn",waHref],["igBtn",igDmHref],["menuIg",igHref],["menuWa",waHref],["footWa",waHref],["footIg",igHref],["footIgText",igHref],["footPhoneText",waHref]]
   .forEach(([id,href]) => { const el = document.getElementById(id); if (el) el.href = href; });
 
 document.getElementById("footIgText").textContent = "@" + CONFIG.PLACEHOLDER_INSTAGRAM;
@@ -1405,7 +1413,7 @@ const totalQty = () => Object.keys(cart).reduce((s, n) => s + cart[n], 0);
 
 function orderText(lines, sub, del, total) {
   const a = currentArea();
-  let t = "FYN order 🍪\n";
+  let t = CONFIG.ORDER_OPENER + "\n";
   lines.forEach(l => { t += `${l.qty}× ${l.name} - ${money(l.amt)}\n`; });
   t += `-----\nSubtotal: ${money(sub)}`;
   t += isPickup(a) ? `\nPickup: free` : `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
@@ -1498,7 +1506,7 @@ cartIg.addEventListener("click", () => {
   const sub = lines.reduce((s, l) => s + l.amt, 0);
   const del = lines.length ? deliveryFee() : 0;
   const txt = orderText(lines, sub, del, sub + del);
-  const openDM = () => window.open(igHref, "_blank", "noopener");
+  const openDM = () => window.open(igDmHref, "_blank", "noopener");
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(txt).then(
       () => { rNote.textContent = "Order copied. Paste it in our DM!"; openDM(); },
