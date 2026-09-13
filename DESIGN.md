@@ -590,6 +590,27 @@ Rules that matter:
 
 The entire site is a single ~1 MB `index.html`. Fonts, mascot, product photos, hero, story photo and the paper texture are all base64 data URIs; only the six Instagram gallery JPEGs and the favicon load as separate files, by relative path. There is no build step, no framework and no external request at runtime, which is why the page works offline, from a file, from a subdirectory, or behind any static host.
 
+### Feedback
+
+Customers write it, only she reads it, and it never appears on the site.
+That last part is the requirement, not an omission.
+
+- **A static file cannot receive anything**, so the form posts to a hosted
+  database. Browser storage is the trap answer here: it saves to the
+  customer's own device, where she would never see it.
+- **The key in the page is the publishable one and is meant to be public.**
+  What protects the data is row level security on the table: anon may
+  INSERT and may not SELECT, so one customer can never read another's.
+  Reading needs a real sign in. The `#admin` passcode cannot be what guards
+  this, because that passcode is printed in a public file.
+- **The length and rating limits live in the table policy, not only in the
+  page**, because anything checked in the page can be bypassed by editing
+  it. The form checks too, for a decent error message rather than security.
+- **Blank config means the section does not render at all.** A form that
+  silently goes nowhere is worse than no form.
+- The token is held in memory only, so closing the tab signs her out. A
+  hidden trap field catches basic bots before anything is sent.
+
 ### Security posture
 
 There is no server, no database, no accounts and no secrets, so most of what a

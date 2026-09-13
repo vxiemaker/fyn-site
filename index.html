@@ -579,6 +579,40 @@ body.menu-open { overflow: hidden; }
 .rfield textarea { min-height: 60px; resize: vertical; }
 .rfield input::placeholder, .rfield textarea::placeholder { color: var(--ink-soft); opacity: 0.55; font-weight: 500; }
 .rfield input:focus-visible, .rfield textarea:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
+/* The feedback form reuses .rfield from the receipt, so the two places a
+   customer types on this site look like one thing. */
+.fb {
+  max-width: 34rem; margin-inline: auto;
+  display: grid; gap: 0.85rem;
+  background: var(--card); border: 3px solid var(--ink); border-radius: var(--radius);
+  padding: clamp(1.25rem, 3vw, 2rem); box-shadow: 4px 4px 0 var(--ink);
+}
+.fb__legend {
+  font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 800; color: var(--ink-soft);
+}
+.fb select {
+  font-family: "Archivo", sans-serif; font-size: 0.92rem; font-weight: 600;
+  color: var(--ink); background: #fff; width: 100%;
+  border: 2.5px solid var(--ink); border-radius: 10px; padding: 0.55em 0.7em;
+}
+.fb select:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
+.fb__stars { display: flex; gap: 0.3rem; }
+.fb__star {
+  width: 2.4rem; height: 2.4rem; padding: 0; line-height: 1;
+  border: 2.5px solid var(--ink); border-radius: 10px;
+  background: var(--cream); color: var(--ink-soft);
+  font-size: 1.15rem; cursor: pointer;
+  display: grid; place-items: center;
+  transition: transform 0.18s var(--ease), background-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.fb__star:hover { transform: translate(-2px,-2px); }
+.fb__star.is-lit { background: var(--red); color: #fff; }
+.fb__star:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
+.fb__note { text-align: center; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--red-deep); min-height: 1em; }
+.fb__note.is-ok { color: #0f7c40; }
+/* Off screen rather than display:none, because a bot reads the DOM. */
+.fb__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .receipt__note { text-align: center; font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--red-deep); margin-top: 0.85rem; min-height: 1em; }
 .receipt__actions { display: grid; gap: 0.6rem; margin-top: 1rem; }
 @media (min-width: 460px) { .receipt__actions { grid-template-columns: 1fr 1fr; } }
@@ -650,6 +684,15 @@ body.menu-open { overflow: hidden; }
   letter-spacing: 0.08em; color: var(--ink-soft);
 }
 .adm-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--red); }
+.adm-fb { display: grid; gap: 0.55rem; margin-top: 0.5rem; }
+.adm-fb__row { border: 2px solid var(--line); border-radius: 10px; padding: 0.6rem 0.7rem; background: #fff; }
+.adm-fb__top { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: baseline; font-size: 0.72rem; }
+.adm-fb__who { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+.adm-fb__when { color: var(--ink-soft); margin-left: auto; font-variant-numeric: tabular-nums; }
+.adm-fb__what { color: var(--ink-soft); font-weight: 700; }
+.adm-fb__stars { color: var(--red); letter-spacing: 0.08em; }
+.adm-fb__msg { margin-top: 0.4rem; font-size: 0.88rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.adm-fb__empty { font-size: 0.85rem; color: var(--ink-soft); }
 /* four controls per area now, so the rows need telling apart */
 #admAreas [data-area] + [data-area] {
   border-top: 1px solid var(--line); padding-top: 0.7rem; margin-top: 0.25rem;
@@ -1104,6 +1147,52 @@ body.menu-open { overflow: hidden; }
 
     </div>
   </section>
+  <!-- ========================= FEEDBACK ========================= -->
+  <!-- Hidden unless CONFIG.FEEDBACK_URL and FEEDBACK_KEY are both filled in.
+       Nothing written here is ever shown on the site. -->
+  <section class="section" id="feedback" aria-labelledby="fbTitle" hidden>
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Tell Us</span>
+      </div></div>
+    <div class="container">
+      <div class="section__head section__head--center reveal">
+        <p class="eyebrow eyebrow--center">Already tried us</p>
+        <h2 class="section__title" id="fbTitle">How was <span class="hl">your box</span>?</h2>
+        <p class="section__intro">Tell us what you actually thought. It comes straight to us and is never posted anywhere on this site.</p>
+      </div>
+
+      <form class="fb reveal" id="fbForm" novalidate>
+        <div class="rfield">
+          <label for="fbName">Your name</label>
+          <input id="fbName" type="text" maxlength="60" autocomplete="name" placeholder="Who are we thanking?" />
+        </div>
+
+        <div class="rfield">
+          <label for="fbCookie">Which one?</label>
+          <select id="fbCookie"></select>
+        </div>
+
+        <div class="rfield">
+          <span class="fb__legend" id="fbRateLabel">How was it?</span>
+          <div class="fb__stars" id="fbStars" role="radiogroup" aria-labelledby="fbRateLabel"></div>
+        </div>
+
+        <div class="rfield">
+          <label for="fbMsg">What did you think?</label>
+          <textarea id="fbMsg" rows="4" maxlength="1000" placeholder="The good and the bad. We would rather hear it from you than not at all."></textarea>
+        </div>
+
+        <!-- Bots fill every field they find. A person never sees this one. -->
+        <div class="fb__hp" aria-hidden="true">
+          <label>Do not fill this in<input id="fbHp" type="text" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <button class="btn btn--red btn--block" id="fbSend" type="submit">Send it</button>
+        <p class="fb__note" id="fbNote" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
   <!-- ========================= GOOD TO KNOW ========================= -->
   <section class="section" id="faq" aria-labelledby="faqTitle">
       <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
@@ -1237,6 +1326,17 @@ const CONFIG = {
 
   /* First line of the order that gets copied into the DM. Reword freely. */
   ORDER_OPENER:          "Yo FYN! I’d like to reserve a box 🍪",
+
+  /* ------------------------------------------------------------------
+     FEEDBACK. Blank means off: the section does not render at all.
+     FEEDBACK_URL is your project URL, e.g. https://abcdef.supabase.co
+     FEEDBACK_KEY is the ANON / PUBLISHABLE key. That one is meant to be
+     public and is safe here.
+     NEVER paste the service_role key. It ignores row level security and
+     this file is readable by anyone who opens the site.
+     ------------------------------------------------------------------ */
+  FEEDBACK_URL:          "",
+  FEEDBACK_KEY:          "",
 
   /* WhatsApp is off. Everything for it is still here and still wired, just
      removed from the page at load. Set this to true to bring back the order
@@ -1636,6 +1736,83 @@ let fillTimer = null;
 window.addEventListener("resize", () => { clearTimeout(fillTimer); fillTimer = setTimeout(fillWalls, 180); });
 
 /* ============================================================================
+   FEEDBACK
+   Static page, so this posts straight to the database. The key below is the
+   publishable one and is meant to be public; what actually protects the data
+   is row level security on the table: anon can insert and cannot select.
+   ============================================================================ */
+const fbOn = () => !!(CONFIG.FEEDBACK_URL && CONFIG.FEEDBACK_KEY);
+const fbSection = document.getElementById("feedback");
+let fbRating = 0;
+
+function fbRenderStars() {
+  const box = document.getElementById("fbStars");
+  if (!box) return;
+  box.innerHTML = [1, 2, 3, 4, 5].map(n => `
+    <button class="fb__star${n <= fbRating ? " is-lit" : ""}" type="button" role="radio"
+            data-n="${n}" aria-checked="${n === fbRating ? "true" : "false"}"
+            aria-label="${n} out of 5">\u2605</button>`).join("");
+}
+
+if (fbSection && fbOn()) {
+  fbSection.hidden = false;
+
+  const sel = document.getElementById("fbCookie");
+  const fillCookies = () => {
+    sel.innerHTML = `<option value="">Pick one, or leave it</option>`
+      + MENU.filter(m => !m.soon).map(m => `<option value="${esc(m.name)}">${esc(m.name)}</option>`).join("")
+      + `<option value="All of them">All of them</option>`;
+  };
+  fillCookies();
+  fbRenderStars();
+
+  document.getElementById("fbStars").addEventListener("click", e => {
+    const b = e.target.closest(".fb__star");
+    if (!b) return;
+    const n = +b.getAttribute("data-n");
+    fbRating = (fbRating === n ? 0 : n);   // tapping the same star clears it
+    fbRenderStars();
+  });
+
+  document.getElementById("fbForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const note = document.getElementById("fbNote");
+    const btn = document.getElementById("fbSend");
+    const name = document.getElementById("fbName").value.trim();
+    const message = document.getElementById("fbMsg").value.trim();
+    const cookie = document.getElementById("fbCookie").value || null;
+
+    note.classList.remove("is-ok");
+    if (document.getElementById("fbHp").value) { note.textContent = "Thanks!"; return; }  // bot
+    if (!name) { note.textContent = "Add your name first"; return; }
+    if (message.length < 3) { note.textContent = "Tell us a bit more"; return; }
+
+    btn.classList.add("is-disabled");
+    note.textContent = "Sending\u2026";
+    try {
+      const res = await fetch(CONFIG.FEEDBACK_URL + "/rest/v1/feedback", {
+        method: "POST",
+        headers: {
+          "apikey": CONFIG.FEEDBACK_KEY,
+          "Authorization": "Bearer " + CONFIG.FEEDBACK_KEY,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({ name, cookie, rating: fbRating || null, message }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      document.getElementById("fbForm").reset();
+      fbRating = 0; fbRenderStars(); fillCookies();
+      note.textContent = "Got it. Thank you!";
+      note.classList.add("is-ok");
+    } catch (err) {
+      note.textContent = "That did not send. Try again, or DM us";
+    }
+    btn.classList.remove("is-disabled");
+  });
+}
+
+/* ============================================================================
    OFF-SCREEN LOOPS
    The marquees, the stamp and the mascot animate forever. Off screen that is
    compositor work spent on pixels nobody can see, so it stops.
@@ -1727,6 +1904,119 @@ const parsePrice = v => {
 };
 const fmtPrice = n => "$" + Number(n).toFixed(2);
 
+/* ---- feedback, read side ------------------------------------------------
+   The passcode on this panel is public, so it cannot be what guards customer
+   feedback. A real sign in is. The token lives in memory only: close the tab
+   and it is gone. -------------------------------------------------------- */
+let fbToken = null;
+let fbRows = null;
+let fbErr = "";
+
+function fbStarStr(n) {
+  n = Math.max(0, Math.min(5, n || 0));
+  return n ? "\u2605".repeat(n) + "\u2606".repeat(5 - n) : "";
+}
+
+function feedbackBlock() {
+  if (!fbOn()) {
+    return `
+    <div class="adm-item">
+      <div class="adm-item__top"><span class="adm-item__idx">Feedback</span></div>
+      <p class="adm-fb__empty">Not set up yet. Add FEEDBACK_URL and FEEDBACK_KEY in the
+      CONFIG block of this file and the form appears on the site.</p>
+    </div>`;
+  }
+  if (!fbToken) {
+    return `
+    <div class="adm-item">
+      <div class="adm-item__top"><span class="adm-item__idx">Feedback</span></div>
+      <p class="adm-fb__empty">Sign in to read what customers wrote.</p>
+      <div class="adm-row">
+        <div class="adm-field">
+          <label for="fbAdmEmail">Email</label>
+          <input id="fbAdmEmail" type="email" autocomplete="username" />
+        </div>
+        <div class="adm-field">
+          <label for="fbAdmPass">Password</label>
+          <input id="fbAdmPass" type="password" autocomplete="current-password" />
+        </div>
+      </div>
+      <button class="adm-btn adm-btn--primary adm-btn--wide" id="fbAdmIn" type="button">Sign in</button>
+      ${fbErr ? `<p class="adm-fb__empty" style="color:var(--red-deep);font-weight:700;">${esc(fbErr)}</p>` : ""}
+    </div>`;
+  }
+  const rows = fbRows == null
+    ? `<p class="adm-fb__empty">Loading\u2026</p>`
+    : (fbRows.length
+      ? `<div class="adm-fb">` + fbRows.map(r => `
+          <div class="adm-fb__row">
+            <div class="adm-fb__top">
+              <span class="adm-fb__who">${esc(r.name || "Someone")}</span>
+              ${r.cookie ? `<span class="adm-fb__what">${esc(r.cookie)}</span>` : ""}
+              ${r.rating ? `<span class="adm-fb__stars">${fbStarStr(r.rating)}</span>` : ""}
+              <span class="adm-fb__when">${esc(String(r.created_at || "").slice(0, 10))}</span>
+            </div>
+            <div class="adm-fb__msg">${esc(r.message || "")}</div>
+          </div>`).join("") + `</div>`
+      : `<p class="adm-fb__empty">Nothing yet.</p>`);
+  return `
+    <div class="adm-item">
+      <div class="adm-item__top"><span class="adm-item__idx">Feedback${fbRows ? " (" + fbRows.length + ")" : ""}</span></div>
+      ${rows}
+      <div class="adm-item__row" style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem;">
+        <button class="adm-btn" id="fbAdmRefresh" type="button">Refresh</button>
+        <button class="adm-btn adm-btn--danger" id="fbAdmOut" type="button">Sign out</button>
+      </div>
+    </div>`;
+}
+
+async function fbLoad() {
+  try {
+    const res = await fetch(CONFIG.FEEDBACK_URL +
+      "/rest/v1/feedback?select=created_at,name,cookie,rating,message&order=created_at.desc&limit=200", {
+      headers: { "apikey": CONFIG.FEEDBACK_KEY, "Authorization": "Bearer " + fbToken },
+    });
+    if (res.status === 401) { fbToken = null; fbErr = "Session expired, sign in again"; renderAdmin(); return; }
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    fbRows = await res.json();
+  } catch (e) {
+    fbRows = [];
+    fbErr = "Could not load feedback";
+  }
+  renderAdmin();
+}
+
+function wireFeedbackAdmin() {
+  const inBtn = document.getElementById("fbAdmIn");
+  if (inBtn) {
+    const go = async () => {
+      const email = document.getElementById("fbAdmEmail").value.trim();
+      const password = document.getElementById("fbAdmPass").value;
+      if (!email || !password) { fbErr = "Email and password, please"; renderAdmin(); return; }
+      inBtn.textContent = "Signing in\u2026";
+      try {
+        const res = await fetch(CONFIG.FEEDBACK_URL + "/auth/v1/token?grant_type=password", {
+          method: "POST",
+          headers: { "apikey": CONFIG.FEEDBACK_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.access_token) throw new Error(data.error_description || "Sign in failed");
+        fbToken = data.access_token; fbErr = ""; fbRows = null;
+        renderAdmin(); fbLoad();
+      } catch (e) {
+        fbErr = String(e.message || e); renderAdmin();
+      }
+    };
+    inBtn.addEventListener("click", go);
+    document.getElementById("fbAdmPass").addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  }
+  const ref = document.getElementById("fbAdmRefresh");
+  if (ref) ref.addEventListener("click", () => { fbRows = null; renderAdmin(); fbLoad(); });
+  const out = document.getElementById("fbAdmOut");
+  if (out) out.addEventListener("click", () => { fbToken = null; fbRows = null; fbErr = ""; renderAdmin(); });
+}
+
 /* ---- panel rendering ---------------------------------------------------- */
 function renderAdmin() {
   const settings = `
@@ -1789,7 +2079,8 @@ function renderAdmin() {
       </div>
     </div>`).join("");
 
-  admEls.body.innerHTML = settings + items;
+  admEls.body.innerHTML = feedbackBlock() + settings + items;
+  wireFeedbackAdmin();
 
   // live-edit text fields
   admEls.body.querySelectorAll(".adm-item[data-i]").forEach(row => {
