@@ -1497,7 +1497,10 @@ let MIN_PCS = 4;             // minimum pieces per order - editable in the admin
    empty every code typed in is turned away, which is deliberate.
    type "percent" takes that many percent off the subtotal, "amount" takes
    that many dollars off. Delivery is never discounted. */
-let COUPONS = [];
+let COUPONS = [
+  { "code": "OD10", "off": 10, "type": "percent" },
+  { "code": "OD10%", "off": 10, "type": "percent" }
+];
 /* SETTINGS:END */
 let areaIdx = null;          // nothing assumed: the customer has to say where
 let priceMap = {};
