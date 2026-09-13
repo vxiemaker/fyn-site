@@ -272,6 +272,12 @@ components:
     selectedTextColor: "{colors.on-primary}"
     role: "radio inside a radiogroup, nothing preselected"
     pickupVariant: "an area flagged pickup reads Free rather than $0.00, and the group label becomes 'Deliver or pick up'"
+  receipt-field:
+    label: "0.64rem, 800, uppercase, 0.12em tracking, {colors.ink-soft}"
+    control: "white, {borders.control}, 10px radius, Archivo 600"
+    focus: "3px 3px 0 {colors.primary}, no outline"
+    placement: "under the total and above the order button, so the price is settled before the details"
+    required: "name always, address unless the chosen area is pickup"
   receipt-row:
     borderBottom: "{borders.hairline}"
     typography: "{typography.body}"
@@ -415,6 +421,22 @@ Rules that matter:
 - **Buttons**: pill (`100px`), 2.5px ink border, `4px 4px 0` ink shadow. Hover slides `translate(-2px,-2px)` and grows the shadow to 6px; active drops to `translate(0,0)` with a 2px shadow, so the press reads as the sticker being pushed flat. Four variants: scarlet, ink, ghost cream, WhatsApp green. No glows, ever.
 - **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°) so they read as hand-slapped stickers rather than a component instance.
 - **Delivery is priced by area, not flat.** The receipt asks where it is going between the items and the totals, so the choice comes before the arithmetic it changes. Nothing is preselected and the order buttons stay locked until an area is picked, because a preselected area would let somebody send a total that is wrong for where they live. The areas and their fees are an editable list in the owner panel.
+- **The receipt collects the order, it does not just price it.** The message
+  used to end in blank `Name:` and `Address:` labels for the customer to fill
+  in after pasting it into a DM, which is a step most people skip, so the
+  orders arrived incomplete and cost a round trip each. The receipt asks for
+  both instead, under the total and above the button, and the button stays
+  locked until they are there. The note names the one thing still missing
+  rather than a generic error: add your name, add your address. Pickup has
+  nowhere to deliver to, so that field hides itself and stops being required.
+- **One channel, behind one switch.** WhatsApp is off and Instagram is the
+  whole order route. Everything for WhatsApp is still in the file and still
+  wired; every part of it carries `data-wa` and is removed at load while
+  `CONFIG.SHOW_WHATSAPP` is false, which also drops the two-up channel grid and
+  the two-up button row to single columns and hides the "Easiest way" badge,
+  since a comparison needs something to compare to. The phone number came out
+  of the structured data as well, because hiding a channel on the page while
+  publishing it to search engines is not hiding it.
 - **Pickup is a kind of area, not an area charging zero.** Dropping a `{ name: "Pickup", fee: 0 }` row into the list would have produced "Deliver to Pickup", a "Delivery $0.00" line, "4 pcs to Pickup" and an order message asking for an address nobody needs. So the row carries a `pickup: true` flag and six strings follow it: the group label, the chip, the receipt line label and its value, the confirmation note, and the order message, which asks for a pickup time instead of an address. The flag is a checkbox in the owner panel that zeroes and locks the fee, and it is deleted rather than written false when unticked, so the exported settings block stays as clean as the one that ships.
 - **The receipt** is the centrepiece and behaves like real paper: gold ticket stripe across the top, dashed rules, a radial-punch perforation along the bottom edge, monospaced-feel tabular figures. Every line is editable in place with a −/+ pill and an ✕.
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
