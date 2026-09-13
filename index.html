@@ -1083,10 +1083,10 @@ body.menu-open { overflow: hidden; }
   </section>
 
   <!-- ========================= FEEDBACK ========================= -->
-  <!-- Nothing written here is ever shown on the site. With a database
-       configured it posts straight there; without one it falls back to
-       copying and opening the DM, so the words are never lost. -->
-  <section class="section section--cream2" id="feedback" aria-labelledby="fbTitle">
+  <!-- Sits under the receipt. Goes to the database and nowhere else, so it
+       stays hidden until CONFIG.FEEDBACK_URL and FEEDBACK_KEY are filled in.
+       Nothing written here is ever shown on the site. -->
+  <section class="section section--cream2" id="feedback" aria-labelledby="fbTitle" hidden>
       <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
         <span>Tell Us</span>
       </div></div>
@@ -1854,10 +1854,11 @@ function fbRenderStars() {
             aria-label="${n} out of 5">\u2605</button>`).join("");
 }
 
-if (fbSection) {
-  /* Without a database this still has to go somewhere, so it takes the same
-     route as an order: copy what they wrote, open the DM. */
-  if (!fbOn()) document.getElementById("fbSend").textContent = "Send it on Instagram";
+/* Feedback goes to the database and nowhere else, so with no database there
+   is nowhere for it to go and the section does not render. Somebody writing
+   something real into a form that cannot send is worse than no form. */
+if (fbSection && fbOn()) {
+  fbSection.hidden = false;
 
   const sel = document.getElementById("fbCookie");
   const fillCookies = () => {
@@ -1888,23 +1889,6 @@ if (fbSection) {
     if (document.getElementById("fbHp").value) { note.textContent = "Thanks!"; return; }  // bot
     if (!name) { note.textContent = "Add your name first"; return; }
     if (message.length < 3) { note.textContent = "Tell us a bit more"; return; }
-
-    if (!fbOn()) {
-      const stars = fbRating ? " (" + fbRating + "/5)" : "";
-      const txt = "Feedback for FYN 🍪\n"
-        + "Name: " + name + "\n"
-        + (cookie ? "Cookie: " + cookie + "\n" : "")
-        + (fbRating ? "Rating: " + fbRating + " out of 5\n" : "")
-        + "\n" + message;
-      const openDM = () => window.open(igDmHref, "_blank", "noopener");
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(
-          () => { note.textContent = "Copied. Paste it in our DM!"; note.classList.add("is-ok"); openDM(); },
-          openDM
-        );
-      } else { openDM(); }
-      return;
-    }
 
     btn.classList.add("is-disabled");
     note.textContent = "Sending\u2026";

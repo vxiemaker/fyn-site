@@ -619,11 +619,11 @@ That last part is the requirement, not an omission.
   the cookies section and the story. The eyebrow reads "Already tried us",
   which is what stops somebody who has just built their first box from
   reading "How was your box?" as a question aimed at them.
-- **The form is never a dead end.** With no database configured it falls
-  back to the route the rest of the site uses, copying what was written and
-  opening the DM, and the button says so. A rejected discount code costs a
-  customer nothing; a feedback form that cannot send loses words somebody
-  took trouble over.
+- **Feedback goes to the database and nowhere else.** Not the DM, not the
+  clipboard. That is the requirement, so with no database there is nowhere
+  for it to go and the section does not render at all. A rejected discount
+  code costs a customer nothing, but a feedback form that cannot send
+  loses words somebody took trouble over, which is worse than no form.
 - **A static file cannot receive anything**, so the form posts to a hosted
   database. Browser storage is the trap answer here: it saves to the
   customer's own device, where she would never see it.
