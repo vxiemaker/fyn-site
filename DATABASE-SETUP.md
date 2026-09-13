@@ -26,19 +26,18 @@ you do not use anywhere else**.
 Do not reuse the site passcode (`fyn2026`). That one is printed in your page
 and anyone can read it.
 
-Then open that user and copy its **UID**, which looks like
-`3f1a...-....-....-....-............`. You need it in the next step.
+Nothing to copy from here. The SQL in the next step already knows this address.
 
 ## 3. Make the tables
 
-Open **SQL Editor**, paste all of this, replace `PASTE-YOUR-UID-HERE` with the
-UID from step 2 (it appears three times), and run it.
+Open **SQL Editor**, paste all of this exactly as it is, and
+run it. Nothing in it needs changing.
 
 ```sql
--- Who the owner is. Everything below asks this function rather than
--- repeating the id, so if you ever change accounts you edit one line.
+-- Who the owner is. Keyed to your email, so there is nothing to look up
+-- and nothing to paste in. Change the address here if you ever change it.
 create or replace function is_owner() returns boolean language sql stable as $$
-  select auth.uid() = 'PASTE-YOUR-UID-HERE'::uuid;
+  select coalesce((auth.jwt() ->> 'email') = 'omardrayie@gmail.com', false);
 $$;
 
 -- ---------------------------------------------------------------- feedback
