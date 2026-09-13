@@ -271,6 +271,7 @@ components:
     selectedBackgroundColor: "{colors.primary}"
     selectedTextColor: "{colors.on-primary}"
     role: "radio inside a radiogroup, nothing preselected"
+    pickupVariant: "an area flagged pickup reads Free rather than $0.00, and the group label becomes 'Deliver or pick up'"
   receipt-row:
     borderBottom: "{borders.hairline}"
     typography: "{typography.body}"
@@ -346,6 +347,7 @@ components:
     mascot: "full-body cut-out, rotated 4deg, cream keyline via stacked drop-shadows"
     facts: "four label and value pairs, no link columns"
     deliveryLine: "rendered from AREAS, so it cannot drift from what the builder charges"
+    deliveryTerm: "reads 'Delivery / pickup' only while a pickup area exists, otherwise 'Delivery'"
   mascot-head:
     usage: "nav, hero and footer lockups beside the wordmark"
     note: "90x82 crop; a full body collapses to nothing at 38px"
@@ -412,7 +414,8 @@ Rules that matter:
 
 - **Buttons**: pill (`100px`), 2.5px ink border, `4px 4px 0` ink shadow. Hover slides `translate(-2px,-2px)` and grows the shadow to 6px; active drops to `translate(0,0)` with a 2px shadow, so the press reads as the sticker being pushed flat. Four variants: scarlet, ink, ghost cream, WhatsApp green. No glows, ever.
 - **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°) so they read as hand-slapped stickers rather than a component instance.
-- **Delivery is priced by area, not flat.** The receipt asks "deliver to" between the items and the totals, so the choice comes before the arithmetic it changes. Nothing is preselected and the order buttons stay locked until an area is picked, because a preselected area would let somebody send a total that is wrong for where they live. The areas and their fees are an editable list in the owner panel, so adding pickup at zero or a third city is a two-field job.
+- **Delivery is priced by area, not flat.** The receipt asks where it is going between the items and the totals, so the choice comes before the arithmetic it changes. Nothing is preselected and the order buttons stay locked until an area is picked, because a preselected area would let somebody send a total that is wrong for where they live. The areas and their fees are an editable list in the owner panel.
+- **Pickup is a kind of area, not an area charging zero.** Dropping a `{ name: "Pickup", fee: 0 }` row into the list would have produced "Deliver to Pickup", a "Delivery $0.00" line, "4 pcs to Pickup" and an order message asking for an address nobody needs. So the row carries a `pickup: true` flag and six strings follow it: the group label, the chip, the receipt line label and its value, the confirmation note, and the order message, which asks for a pickup time instead of an address. The flag is a checkbox in the owner panel that zeroes and locks the fee, and it is deleted rather than written false when unticked, so the exported settings block stays as clean as the one that ships.
 - **The receipt** is the centrepiece and behaves like real paper: gold ticket stripe across the top, dashed rules, a radial-punch perforation along the bottom edge, monospaced-feel tabular figures. Every line is editable in place with a −/+ pill and an ✕.
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
 - **Empty state**: the mascot stands in the receipt as a transparent cut-out with "Your box is empty. Add some cookies above." beneath him, rather than rendering an empty table. He is replaced by the line items the moment anything is added, so he never competes with content.

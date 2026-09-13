@@ -613,6 +613,18 @@ body.menu-open { overflow: hidden; }
   border: 2px solid var(--ink); border-radius: 9px; padding: 0.5em 0.6em; background: #fff; font-size: 0.92rem; width: 100%;
 }
 .adm-field textarea { min-height: 62px; resize: vertical; }
+.adm-field input:disabled { opacity: 0.42; cursor: not-allowed; }
+.adm-check {
+  display: inline-flex; align-items: center; gap: 0.45em; align-self: end;
+  padding-bottom: 0.55em; cursor: pointer;
+  font-size: 0.66rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-soft);
+}
+.adm-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--red); }
+/* four controls per area now, so the rows need telling apart */
+#admAreas [data-area] + [data-area] {
+  border-top: 1px solid var(--line); padding-top: 0.7rem; margin-top: 0.25rem;
+}
 .adm-field input:focus-visible, .adm-field textarea:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
 .adm-item__actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .adm-btn {
@@ -938,7 +950,7 @@ body.menu-open { overflow: hidden; }
           </div>
           <div class="receipt__totals">
             <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
-            <div class="receipt__line"><span>Delivery</span><span id="rDel">$0.00</span></div>
+            <div class="receipt__line"><span id="rDelLabel">Delivery</span><span id="rDel">$0.00</span></div>
             <div class="receipt__total"><span class="label">Total</span><span class="val" id="rTotal">$0.00</span></div>
           </div>
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
@@ -1077,11 +1089,11 @@ body.menu-open { overflow: hidden; }
         </details>
         <details>
           <summary>How much is delivery?</summary>
-          <p>It depends on where you are. Tripoli is $2 and Beirut is $5. Pick your area in the box builder above and it adds to your total. Somewhere else, or want to pick up instead? Message us and we’ll sort it out.</p>
+          <p>It depends on where you are. Tripoli is $2, Beirut is $5, and picking up from us is free. Choose one in the box builder above and it adds to your total. Somewhere else? Message us and we’ll sort it out.</p>
         </details>
         <details>
           <summary>Where do you deliver?</summary>
-          <p>We deliver around Lebanon. Send us your area with your order and we’ll confirm it and the timing before you pay anything.</p>
+          <p>We deliver around Lebanon, and you can always pick up from us instead by choosing Pickup in the box builder. Send us your area with your order and we’ll confirm it and the timing before you pay anything.</p>
         </details>
         <details>
           <summary>Anything I should know about allergies?</summary>
@@ -1155,7 +1167,7 @@ body.menu-open { overflow: hidden; }
     </div>
 
     <dl class="footer__facts">
-      <div><dt>Delivery</dt><dd id="footDelivery">Tripoli &middot; Beirut</dd></div>
+      <div><dt id="footDeliveryLabel">Delivery</dt><dd id="footDelivery">Tripoli &middot; Beirut</dd></div>
       <div><dt>Orders</dt><dd id="footHours">Pre-order &middot; Min 4 pcs</dd></div>
       <div><dt>Based in</dt><dd id="footLocation">Lebanon</dd></div>
       <div><dt>Find us</dt><dd><a id="footIgText" href="#" target="_blank" rel="noopener" translate="no">@fyn.lb</a> &middot; <a id="footPhoneText" href="#" target="_blank" rel="noopener">WhatsApp</a></dd></div>
@@ -1274,7 +1286,8 @@ renderMenu();
 /* SETTINGS:START */
 let AREAS = [
   { name: "Tripoli", fee: 2 },
-  { name: "Beirut", fee: 5 }
+  { name: "Beirut", fee: 5 },
+  { name: "Pickup", fee: 0, pickup: true }
 ];
 let MIN_PCS = 4;             // minimum pieces per order - editable in the admin panel
 /* SETTINGS:END */
@@ -1287,15 +1300,23 @@ const money = n => "$" + n.toFixed(2);
 
 const areaPicker = document.getElementById("areaPicker");
 const currentArea = () => (areaIdx == null ? null : AREAS[areaIdx] || null);
-const deliveryFee = () => { const a = currentArea(); return a ? a.fee : 0; };
+/* Pickup charges nothing and has nowhere to deliver to, so it changes the
+   wording everywhere the fee is named, not only the number. */
+const isPickup = a => !!(a && a.pickup);
+const hasPickup = () => AREAS.some(isPickup);
+const deliveryFee = () => { const a = currentArea(); return a && !isPickup(a) ? a.fee : 0; };
 
 function renderAreas() {
   const fd = document.getElementById("footDelivery");
-  if (fd) fd.textContent = AREAS.map(a => a.name + " " + money(a.fee)).join(" \u00b7 ");
+  if (fd) fd.textContent = AREAS.map(a => a.name + " " + (isPickup(a) ? "free" : money(a.fee))).join(" \u00b7 ");
+  const fdl = document.getElementById("footDeliveryLabel");
+  if (fdl) fdl.textContent = hasPickup() ? "Delivery / pickup" : "Delivery";
+  const al = document.getElementById("areaLabel");
+  if (al) al.textContent = hasPickup() ? "Deliver or pick up" : "Deliver to";
   areaPicker.innerHTML = AREAS.map((a, i) => `
     <button class="area-btn" type="button" role="radio" data-i="${i}"
             aria-checked="${i === areaIdx ? "true" : "false"}">
-      <span>${esc(a.name)}</span><span class="fee">${money(a.fee)}</span>
+      <span>${esc(a.name)}</span><span class="fee">${isPickup(a) ? "Free" : money(a.fee)}</span>
     </button>`).join("");
 }
 
@@ -1324,9 +1345,9 @@ function orderText(lines, sub, del, total) {
   let t = "FYN order 🍪\n";
   lines.forEach(l => { t += `${l.qty}× ${l.name} - ${money(l.amt)}\n`; });
   t += `-----\nSubtotal: ${money(sub)}`;
-  t += `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
+  t += isPickup(a) ? `\nPickup: free` : `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
   t += `\nTotal: ${money(total)}`;
-  t += `\n\nName:\nAddress:`;
+  t += isPickup(a) ? `\n\nName:\nPickup time:` : `\n\nName:\nAddress:`;
   return t;
 }
 
@@ -1342,7 +1363,9 @@ function renderCart() {
     : `<div class="receipt__empty"><span class="receipt__mascot" aria-hidden="true"></span><span>Your box is empty. Add some cookies above.</span></div>`;
 
   rSub.textContent = money(sub);
-  rDel.textContent = money(del);
+  const picking = isPickup(currentArea());
+  rDelLabel.textContent = picking ? "Pickup" : "Delivery";
+  rDel.textContent = picking ? "Free" : money(del);
   const totalChanged = rTotal.textContent !== money(total);
   rTotal.textContent = money(total);
   if (totalChanged && !reduceMotion) {
@@ -1357,7 +1380,9 @@ function renderCart() {
   if (qty === 0) rNote.textContent = `Min order ${MIN_PCS} pcs`;
   else if (!enough) rNote.textContent = `Add ${MIN_PCS - qty} more, min ${MIN_PCS} pcs`;
   else if (!a) rNote.textContent = "Pick where it is going";
-  else rNote.textContent = `${qty} pcs to ${a.name}, you’re good to go!`;
+  else rNote.textContent = isPickup(a)
+    ? `${qty} pcs to pick up, you’re good to go!`
+    : `${qty} pcs to ${a.name}, you’re good to go!`;
 
   cartWa.classList.toggle("is-disabled", !ok);
   cartIg.classList.toggle("is-disabled", !ok);
@@ -1631,7 +1656,7 @@ function renderAdmin() {
           <input id="admMin" type="number" min="1" step="1" value="${MIN_PCS}" />
         </div>
       </div>
-      <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Delivery areas</label>
+      <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Delivery areas and pickup</label>
       <div id="admAreas">
         ${AREAS.map((a, i) => `
           <div class="adm-row" data-area="${i}" style="align-items:end;">
@@ -1641,8 +1666,9 @@ function renderAdmin() {
             </div>
             <div class="adm-field">
               <label>Fee ($)</label>
-              <input data-af="fee" type="number" min="0" step="0.5" value="${a.fee}" />
+              <input data-af="fee" type="number" min="0" step="0.5" value="${a.fee}"${a.pickup ? " disabled" : ""} />
             </div>
+            <label class="adm-check"><input data-af="pickup" type="checkbox"${a.pickup ? " checked" : ""} /> Pickup, no fee</label>
             <button class="adm-btn adm-btn--danger" data-area-del="${i}" type="button" style="align-self:end;">Remove</button>
           </div>`).join("")}
       </div>
@@ -1712,6 +1738,14 @@ function renderAdmin() {
     row.querySelectorAll("[data-af]").forEach(input => {
       input.addEventListener("input", () => {
         const f = input.getAttribute("data-af");
+        if (f === "pickup") {
+          // the flag is deleted rather than set false, so the exported
+          // settings block stays as clean as the one that ships
+          if (input.checked) { AREAS[i].pickup = true; AREAS[i].fee = 0; }
+          else delete AREAS[i].pickup;
+          applyChanges(); renderAdmin();
+          return;
+        }
         AREAS[i][f] = f === "fee" ? Math.max(0, parseFloat(input.value) || 0) : input.value;
         applyChanges();
       });
