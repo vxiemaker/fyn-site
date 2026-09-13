@@ -1082,6 +1082,53 @@ body.menu-open { overflow: hidden; }
     </div>
   </section>
 
+  <!-- ========================= FEEDBACK ========================= -->
+  <!-- Nothing written here is ever shown on the site. With a database
+       configured it posts straight there; without one it falls back to
+       copying and opening the DM, so the words are never lost. -->
+  <section class="section section--cream2" id="feedback" aria-labelledby="fbTitle">
+      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
+        <span>Tell Us</span>
+      </div></div>
+    <div class="container">
+      <div class="section__head section__head--center reveal">
+        <p class="eyebrow eyebrow--center">Already tried us</p>
+        <h2 class="section__title" id="fbTitle">How was <span class="hl">your box</span>?</h2>
+        <p class="section__intro">Tell us what you actually thought. It comes straight to us and is never posted anywhere on this site.</p>
+      </div>
+
+      <form class="fb reveal" id="fbForm" novalidate>
+        <div class="rfield">
+          <label for="fbName">Your name</label>
+          <input id="fbName" type="text" maxlength="60" autocomplete="name" placeholder="Who are we thanking?" />
+        </div>
+
+        <div class="rfield">
+          <label for="fbCookie">Which one?</label>
+          <select id="fbCookie"></select>
+        </div>
+
+        <div class="rfield">
+          <span class="fb__legend" id="fbRateLabel">How was it?</span>
+          <div class="fb__stars" id="fbStars" role="radiogroup" aria-labelledby="fbRateLabel"></div>
+        </div>
+
+        <div class="rfield">
+          <label for="fbMsg">What did you think?</label>
+          <textarea id="fbMsg" rows="4" maxlength="1000" placeholder="The good and the bad. We would rather hear it from you than not at all."></textarea>
+        </div>
+
+        <!-- Bots fill every field they find. A person never sees this one. -->
+        <div class="fb__hp" aria-hidden="true">
+          <label>Do not fill this in<input id="fbHp" type="text" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <button class="btn btn--red btn--block" id="fbSend" type="submit">Send it</button>
+        <p class="fb__note" id="fbNote" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
   <!-- ========================= OUR STORY ========================= -->
   <section class="section section--red story--red" id="story" aria-labelledby="storyTitle">
     <span class="seam-sticker" aria-hidden="true"></span>
@@ -1181,52 +1228,6 @@ body.menu-open { overflow: hidden; }
 
     </div>
   </section>
-  <!-- ========================= FEEDBACK ========================= -->
-  <!-- Hidden unless CONFIG.FEEDBACK_URL and FEEDBACK_KEY are both filled in.
-       Nothing written here is ever shown on the site. -->
-  <section class="section" id="feedback" aria-labelledby="fbTitle" hidden>
-      <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
-        <span>Tell Us</span>
-      </div></div>
-    <div class="container">
-      <div class="section__head section__head--center reveal">
-        <p class="eyebrow eyebrow--center">Already tried us</p>
-        <h2 class="section__title" id="fbTitle">How was <span class="hl">your box</span>?</h2>
-        <p class="section__intro">Tell us what you actually thought. It comes straight to us and is never posted anywhere on this site.</p>
-      </div>
-
-      <form class="fb reveal" id="fbForm" novalidate>
-        <div class="rfield">
-          <label for="fbName">Your name</label>
-          <input id="fbName" type="text" maxlength="60" autocomplete="name" placeholder="Who are we thanking?" />
-        </div>
-
-        <div class="rfield">
-          <label for="fbCookie">Which one?</label>
-          <select id="fbCookie"></select>
-        </div>
-
-        <div class="rfield">
-          <span class="fb__legend" id="fbRateLabel">How was it?</span>
-          <div class="fb__stars" id="fbStars" role="radiogroup" aria-labelledby="fbRateLabel"></div>
-        </div>
-
-        <div class="rfield">
-          <label for="fbMsg">What did you think?</label>
-          <textarea id="fbMsg" rows="4" maxlength="1000" placeholder="The good and the bad. We would rather hear it from you than not at all."></textarea>
-        </div>
-
-        <!-- Bots fill every field they find. A person never sees this one. -->
-        <div class="fb__hp" aria-hidden="true">
-          <label>Do not fill this in<input id="fbHp" type="text" tabindex="-1" autocomplete="off" /></label>
-        </div>
-
-        <button class="btn btn--red btn--block" id="fbSend" type="submit">Send it</button>
-        <p class="fb__note" id="fbNote" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </section>
-
   <!-- ========================= GOOD TO KNOW ========================= -->
   <section class="section" id="faq" aria-labelledby="faqTitle">
       <div class="wordwall" aria-hidden="true"><div class="wordwall__inner">
@@ -1853,8 +1854,10 @@ function fbRenderStars() {
             aria-label="${n} out of 5">\u2605</button>`).join("");
 }
 
-if (fbSection && fbOn()) {
-  fbSection.hidden = false;
+if (fbSection) {
+  /* Without a database this still has to go somewhere, so it takes the same
+     route as an order: copy what they wrote, open the DM. */
+  if (!fbOn()) document.getElementById("fbSend").textContent = "Send it on Instagram";
 
   const sel = document.getElementById("fbCookie");
   const fillCookies = () => {
@@ -1885,6 +1888,23 @@ if (fbSection && fbOn()) {
     if (document.getElementById("fbHp").value) { note.textContent = "Thanks!"; return; }  // bot
     if (!name) { note.textContent = "Add your name first"; return; }
     if (message.length < 3) { note.textContent = "Tell us a bit more"; return; }
+
+    if (!fbOn()) {
+      const stars = fbRating ? " (" + fbRating + "/5)" : "";
+      const txt = "Feedback for FYN 🍪\n"
+        + "Name: " + name + "\n"
+        + (cookie ? "Cookie: " + cookie + "\n" : "")
+        + (fbRating ? "Rating: " + fbRating + " out of 5\n" : "")
+        + "\n" + message;
+      const openDM = () => window.open(igDmHref, "_blank", "noopener");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(
+          () => { note.textContent = "Copied. Paste it in our DM!"; note.classList.add("is-ok"); openDM(); },
+          openDM
+        );
+      } else { openDM(); }
+      return;
+    }
 
     btn.classList.add("is-disabled");
     note.textContent = "Sending\u2026";

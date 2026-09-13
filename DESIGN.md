@@ -615,6 +615,15 @@ The entire site is a single ~1 MB `index.html`. Fonts, mascot, product photos, h
 Customers write it, only she reads it, and it never appears on the site.
 That last part is the requirement, not an omission.
 
+- **It sits directly under the receipt**, as its own `cream2` band between
+  the cookies section and the story. The eyebrow reads "Already tried us",
+  which is what stops somebody who has just built their first box from
+  reading "How was your box?" as a question aimed at them.
+- **The form is never a dead end.** With no database configured it falls
+  back to the route the rest of the site uses, copying what was written and
+  opening the DM, and the button says so. A rejected discount code costs a
+  customer nothing; a feedback form that cannot send loses words somebody
+  took trouble over.
 - **A static file cannot receive anything**, so the form posts to a hosted
   database. Browser storage is the trap answer here: it saves to the
   customer's own device, where she would never see it.
