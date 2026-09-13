@@ -237,6 +237,7 @@ components:
     rotation: "-3deg / 2.5deg / -2deg / 3deg, cycling every four cards so any menu length is covered"
   badge-soon:
     backgroundColor: "{colors.ink}"
+    tile: "a teaser image when the card has one, otherwise the gradient placeholder; never a stepper"
   hero-figure:
     aspectRatio: "5 / 6"
     border: "{borders.frame}"
@@ -432,6 +433,20 @@ Rules that matter:
 
 - **Buttons**: pill (`100px`), 2.5px ink border, `4px 4px 0` ink shadow. Hover slides `translate(-2px,-2px)` and grows the shadow to 6px; active drops to `translate(0,0)` with a 2px shadow, so the press reads as the sticker being pushed flat. Four variants: scarlet, ink, ghost cream, WhatsApp green. No glows, ever.
 - **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°), cycling every four, so they read as hand-slapped stickers rather than a component instance.
+- **The badge is fixed pixels sitting on a tile that is not.** It is 113x34
+  whatever the viewport, which is 16.9% of a 244px desktop tile but **26.5% of
+  a 156px phone tile**. Anything an image puts in its own top-left third
+  survives on a desktop and is buried on a phone. This has now cost two
+  redraws: the mascot, and the drop teaser, whose logo mark sat at 19.3% and
+  vanished behind the badge. Art for a card gets composed against the phone
+  tile, not the desktop one.
+- **A card shows a photo when it has one, not when it is orderable.** The test
+  used to be "is this coming soon", which meant a teaser could never carry an
+  image, and a newly added cookie rendered an `<img src="">` that failed and
+  then hid itself. The condition is the photo now, so a coming soon card can
+  show artwork and an empty one falls back to the gradient placeholder
+  cleanly. What still marks a card unorderable is `soon`, which removes the
+  stepper and prints "Dropping soon" instead.
 - **The menu grid counts nothing.** It was four fixed columns and four badge
   rotations, which is fine until a fifth flavour is added from the admin panel:
   the fifth card hung alone at the left of a new row and its badge sat
