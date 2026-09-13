@@ -221,6 +221,9 @@ components:
     transform: translate(-3px, -3px)
     shadow: "{shadows.hard-lift}"
     imageScale: 1.07
+  product-grid:
+    layout: "flex wrap, centred, two up and four up from 960px"
+    reason: "the menu is edited from the admin panel, so a last row with one card in it has to centre rather than hang left"
   product-card-media:
     aspectRatio: "1 / 1"
     borderBottom: "{borders.frame}"
@@ -231,7 +234,7 @@ components:
     border: "2px solid {colors.ink}"
     rounded: "{rounded.pill}"
     typography: "{typography.label-micro}"
-    rotation: "-3deg / 2.5deg / -2deg / 3deg by position"
+    rotation: "-3deg / 2.5deg / -2deg / 3deg, cycling every four cards so any menu length is covered"
   badge-soon:
     backgroundColor: "{colors.ink}"
   hero-figure:
@@ -377,6 +380,15 @@ The second defining move is that **elevation is print, not material**. Nothing u
 
 Photography carries the brand. Real cookies, real hands, cropped tight enough that the chocolate is the subject. Photos are never square to the grid: the hero figure sits at +1.5°, the story figure at −1.5°. Every photograph lives inside a rounded ink frame, without exception.
 
+Product shots arrive on white and have to end up on cream `#f0e6cb`, because a
+white tile inside a cream card reads as a hole. Keying the white away flatly
+takes the contact shadow with it and the cookie ends up floating. So the
+background is treated as a shadow map instead: the region reachable from the
+frame edge by flood fill, which leaves pale filling inside the cookie alone, is
+replaced with cream multiplied by its own brightness. The shadow survives in
+the brand colour, the corners land on exactly `(240, 230, 203)`, and the crop
+is square at about 88% subject fill to match the tiles already there.
+
 ## 2. Colour Palette & Roles
 
 One accent. Scarlet is the only chromatic colour in the system; everything else is warm neutral.
@@ -419,7 +431,14 @@ Rules that matter:
 ## 4. Component Behaviour
 
 - **Buttons**: pill (`100px`), 2.5px ink border, `4px 4px 0` ink shadow. Hover slides `translate(-2px,-2px)` and grows the shadow to 6px; active drops to `translate(0,0)` with a 2px shadow, so the press reads as the sticker being pushed flat. Four variants: scarlet, ink, ghost cream, WhatsApp green. No glows, ever.
-- **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°) so they read as hand-slapped stickers rather than a component instance.
+- **Product cards**: 3px ink frame, 16px radius, square photo with a 3px divider under it. Hover slides `-3px,-3px` and swaps the ink shadow for scarlet while the photo scales to 1.07. Badges are pill-shaped and **rotated by position** (−3°, 2.5°, −2°, 3°), cycling every four, so they read as hand-slapped stickers rather than a component instance.
+- **The menu grid counts nothing.** It was four fixed columns and four badge
+  rotations, which is fine until a fifth flavour is added from the admin panel:
+  the fifth card hung alone at the left of a new row and its badge sat
+  perfectly square while the other four were tilted. Both cycle now. The grid
+  is flex rather than grid so the last row centres, and the rotations run on
+  `nth-child(4n+k)`, so the sixth and tenth flavours land correctly with no
+  code change.
 - **Delivery is priced by area, not flat.** The receipt asks where it is going between the items and the totals, so the choice comes before the arithmetic it changes. Nothing is preselected and the order buttons stay locked until an area is picked, because a preselected area would let somebody send a total that is wrong for where they live. The areas and their fees are an editable list in the owner panel.
 - **The receipt collects the order, it does not just price it.** The message
   used to end in blank `Name:` and `Address:` labels for the customer to fill
