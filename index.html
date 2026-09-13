@@ -1736,7 +1736,7 @@ function renderAdmin() {
           <div class="adm-row" data-area="${i}" style="align-items:end;">
             <div class="adm-field">
               <label>Area</label>
-              <input data-af="name" type="text" value="${String(a.name).replace(/"/g, "&quot;")}" />
+              <input data-af="name" type="text" value="${esc(a.name)}" />
             </div>
             <div class="adm-field">
               <label>Fee ($)</label>
@@ -1752,12 +1752,12 @@ function renderAdmin() {
   const items = MENU.map((m, i) => `
     <div class="adm-item" data-i="${i}">
       <div class="adm-item__top">
-        <img class="adm-item__thumb" width="52" height="52" src="${m.img || ""}" alt="" onerror="this.style.visibility='hidden'" />
+        <img class="adm-item__thumb" width="52" height="52" src="${esc(m.img || "")}" alt="" onerror="this.style.visibility='hidden'" />
         <span class="adm-item__idx">#${i + 1}</span>
       </div>
       <div class="adm-field">
         <label>Name</label>
-        <input data-f="name" type="text" value="${String(m.name).replace(/"/g, "&quot;")}" />
+        <input data-f="name" type="text" value="${esc(m.name)}" />
       </div>
       <div class="adm-row">
         <div class="adm-field">
@@ -1766,12 +1766,12 @@ function renderAdmin() {
         </div>
         <div class="adm-field">
           <label>Badge</label>
-          <input data-f="tag" type="text" value="${String(m.tag || "").replace(/"/g, "&quot;")}" />
+          <input data-f="tag" type="text" value="${esc(m.tag || "")}" />
         </div>
       </div>
       <div class="adm-field">
         <label>Description</label>
-        <textarea data-f="desc">${String(m.desc || "")}</textarea>
+        <textarea data-f="desc">${esc(m.desc || "")}</textarea>
       </div>
       <div class="adm-item__actions">
         <button class="adm-btn" data-act="photo" type="button">Change photo</button>

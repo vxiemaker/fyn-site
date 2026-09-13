@@ -560,4 +560,31 @@ Rules that matter:
 
 The entire site is a single ~1 MB `index.html`. Fonts, mascot, product photos, hero, story photo and the paper texture are all base64 data URIs; only the six Instagram gallery JPEGs and the favicon load as separate files, by relative path. There is no build step, no framework and no external request at runtime, which is why the page works offline, from a file, from a subdirectory, or behind any static host.
 
+### Security posture
+
+There is no server, no database, no accounts and no secrets, so most of what a
+web app has to defend does not exist here. What does apply is written down so
+it is not undone by accident:
+
+- **`_headers` carries a content security policy** that allows scripts, styles,
+  images, fonts and connections from this origin only, denies framing, and
+  pins `base-uri`, `object-src` and `form-action` shut. This is only cheap
+  because the page loads nothing from anywhere. **Adding a Google Font, an
+  analytics tag or any CDN script breaks the page unless the policy is widened
+  first**, which is a feature: it makes the anti-pattern fail loudly.
+  `'unsafe-inline'` is granted to script and style purely because the whole
+  site is one file of inline blocks.
+- **Nothing a customer types reaches `innerHTML`.** The name and address go
+  into a plain string, then through `encodeURIComponent` or the clipboard.
+  Every interpolation that does reach `innerHTML`, in the menu, the area chips,
+  the receipt rows and the owner panel, goes through `esc()` without exception.
+- **The `#admin` passcode is not a security boundary** and the file says so.
+  It is in a public page, so it is readable by anyone. It exists to keep
+  customers from wandering into the editor. It protects nothing, because the
+  editor only writes to the visitor's own `localStorage` and produces a
+  download; it cannot change the published site.
+- **Prices are client-side and therefore forgeable.** Somebody can edit the
+  total in devtools and send a message claiming a wrong price. The control is
+  that every order is confirmed in the DM before any money moves, not the page.
+
 The product list lives between `/* MENU:START */` and `/* MENU:END */` markers and the shop settings between `/* SETTINGS:START */` and `/* SETTINGS:END */`. The owner-only editor at `#admin` rewrites exactly those two blocks when exporting a new `index.html`, so any change to that region must keep the markers intact and unique.

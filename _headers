@@ -1,0 +1,17 @@
+# Netlify serves these with every response from this site.
+#
+# The page is entirely self contained: no external scripts, no web fonts, no
+# analytics, no XHR to anywhere but itself. That makes a tight policy cheap,
+# because there is nothing legitimate to allow through.
+#
+# 'unsafe-inline' is present for script and style only because the whole site
+# is one file with inline <style> and <script> blocks. It still blocks loading
+# script from any other origin, which is the attack this is actually for.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
