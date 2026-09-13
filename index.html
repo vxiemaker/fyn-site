@@ -564,6 +564,29 @@ body.menu-open { overflow: hidden; }
 .receipt__total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.5rem; padding-top: 0.7rem; border-top: 2px solid var(--ink); }
 .receipt__total .label { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 1.25rem; }
 .receipt__total .val { font-family: "Anton", sans-serif; font-size: 1.8rem; color: var(--red); font-variant-numeric: tabular-nums; }
+.receipt__promo { margin-top: 0.95rem; }
+.promo { display: flex; gap: 0.45rem; }
+.promo input {
+  flex: 1; min-width: 0;
+  font-family: "Archivo", sans-serif; font-size: 0.92rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); background: #fff;
+  border: 2.5px solid var(--ink); border-radius: 10px; padding: 0.55em 0.7em;
+}
+.promo input::placeholder { letter-spacing: 0.04em; text-transform: none; font-weight: 500; color: var(--ink-soft); opacity: 0.55; }
+.promo input:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
+.promo__btn {
+  font-family: "Archivo", sans-serif; font-weight: 800; font-size: 0.75rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0 1em; border-radius: 10px; white-space: nowrap;
+  border: 2.5px solid var(--ink); background: var(--ink); color: var(--cream);
+  cursor: pointer; transition: transform 0.18s var(--ease), background-color 0.18s var(--ease);
+}
+.promo__btn:hover { transform: translate(-2px,-2px); background: var(--red); }
+.promo__note { margin-top: 0.4rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--red-deep); min-height: 1em; }
+.promo__note.is-ok { color: #0f7c40; }
+#rDiscLine { color: #0f7c40; }
+#rDiscLine[hidden] { display: none; }
 .receipt__details { margin-top: 1rem; display: grid; gap: 0.65rem; }
 .rfield { display: grid; gap: 0.3rem; }
 .rfield[hidden] { display: none; }
@@ -694,7 +717,8 @@ body.menu-open { overflow: hidden; }
 .adm-fb__msg { margin-top: 0.4rem; font-size: 0.88rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
 .adm-fb__empty { font-size: 0.85rem; color: var(--ink-soft); }
 /* four controls per area now, so the rows need telling apart */
-#admAreas [data-area] + [data-area] {
+#admAreas [data-area] + [data-area],
+#admCoupons [data-coupon] + [data-coupon] {
   border-top: 1px solid var(--line); padding-top: 0.7rem; margin-top: 0.25rem;
 }
 .adm-field input:focus-visible, .adm-field textarea:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
@@ -1022,8 +1046,18 @@ body.menu-open { overflow: hidden; }
             <span class="receipt__deliver-label" id="areaLabel">Deliver to</span>
             <div class="receipt__areas" id="areaPicker" role="radiogroup" aria-labelledby="areaLabel"></div>
           </div>
+          <div class="receipt__promo" id="promoWrap" hidden>
+            <span class="receipt__deliver-label" id="promoLabel">Got a code?</span>
+            <div class="promo">
+              <input id="promoCode" type="text" maxlength="24" autocomplete="off"
+                     spellcheck="false" placeholder="Type it here" aria-labelledby="promoLabel" />
+              <button class="promo__btn" id="promoApply" type="button">Apply</button>
+            </div>
+            <p class="promo__note" id="promoNote" role="status" aria-live="polite"></p>
+          </div>
           <div class="receipt__totals">
             <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
+            <div class="receipt__line" id="rDiscLine" hidden><span id="rDiscLabel">Discount</span><span id="rDisc">$0.00</span></div>
             <div class="receipt__line"><span id="rDelLabel">Delivery</span><span id="rDel">$0.00</span></div>
             <div class="receipt__total"><span class="label">Total</span><span class="val" id="rTotal">$0.00</span></div>
           </div>
@@ -1458,6 +1492,10 @@ let AREAS = [
   { name: "Beirut", fee: 5 }
 ];
 let MIN_PCS = 4;             // minimum pieces per order - editable in the admin panel
+/* Discount codes. Empty means the coupon box does not appear on the receipt.
+   type "percent" takes that many percent off the subtotal, "amount" takes
+   that many dollars off. Delivery is never discounted. */
+let COUPONS = [];
 /* SETTINGS:END */
 let areaIdx = null;          // nothing assumed: the customer has to say where
 let priceMap = {};
@@ -1467,6 +1505,23 @@ const cart = {};             // name -> qty
 const money = n => "$" + n.toFixed(2);
 
 const areaPicker = document.getElementById("areaPicker");
+/* A code comes off the subtotal only, never the delivery fee, and can never
+   take the total below zero. */
+let promo = null;
+const promoWrap = document.getElementById("promoWrap");
+const normCode = c => String(c || "").trim().toUpperCase();
+const findCoupon = c => COUPONS.find(x => normCode(x.code) === c) || null;
+const discountOn = sub => {
+  if (!promo || sub <= 0) return 0;
+  const raw = promo.type === "amount" ? Number(promo.off) : sub * (Number(promo.off) / 100);
+  return Math.min(sub, Math.max(0, Math.round(raw * 100) / 100));
+};
+function renderPromo() {
+  if (!promoWrap) return;
+  promoWrap.hidden = !COUPONS.length;          // no codes, no box
+  if (!COUPONS.length && promo) { promo = null; }
+}
+
 const currentArea = () => (areaIdx == null ? null : AREAS[areaIdx] || null);
 /* Pickup charges nothing and has nowhere to deliver to, so it changes the
    wording everywhere the fee is named, not only the number. */
@@ -1516,6 +1571,8 @@ function orderText(lines, sub, del, total) {
   let t = CONFIG.ORDER_OPENER + "\n";
   lines.forEach(l => { t += `${l.qty}× ${l.name} - ${money(l.amt)}\n`; });
   t += `-----\nSubtotal: ${money(sub)}`;
+  const disc = discountOn(sub);
+  if (disc) t += `\nDiscount (${normCode(promo.code)}): \u2212${money(disc)}`;
   t += isPickup(a) ? `\nPickup: free` : `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
   t += `\nTotal: ${money(total)}`;
   t += `\n\nName: ${ordName.value.trim()}`;
@@ -1528,13 +1585,19 @@ function renderCart() {
   const sub = lines.reduce((s, l) => s + l.amt, 0);
   const qty = totalQty();
   const del = lines.length ? deliveryFee() : 0;
-  const total = sub + del;
+  const total = sub - discountOn(sub) + del;
 
   receiptRows.innerHTML = lines.length
     ? lines.map(l => `<div class="receipt__row"><span class="rq" data-name="${esc(l.name)}"><button type="button" data-act="dec" aria-label="One less ${esc(l.name)}">&minus;</button><span class="rq__n">${l.qty}</span><button type="button" data-act="inc" aria-label="One more ${esc(l.name)}">+</button></span><span class="item" translate="no">${esc(l.name)}</span><span class="amt">${money(l.amt)}</span><button type="button" class="rrm" data-name="${esc(l.name)}" aria-label="Take ${esc(l.name)} out of the box">&times;</button></div>`).join("")
     : `<div class="receipt__empty"><span class="receipt__mascot" aria-hidden="true"></span><span>Your box is empty. Add some cookies above.</span></div>`;
 
   rSub.textContent = money(sub);
+  const disc = discountOn(sub);
+  rDiscLine.hidden = !disc;
+  if (disc) {
+    rDiscLabel.textContent = "Discount (" + normCode(promo.code) + ")";
+    rDisc.textContent = "\u2212" + money(disc);
+  }
   const picking = isPickup(currentArea());
   rDelLabel.textContent = picking ? "Pickup" : "Delivery";
   rDel.textContent = picking ? "Free" : money(del);
@@ -1599,6 +1662,37 @@ grid.addEventListener("click", e => {
 });
 
 [ordName, ordAddr].forEach(el => el.addEventListener("input", renderCart));
+
+if (promoWrap) {
+  const input = document.getElementById("promoCode");
+  const note = document.getElementById("promoNote");
+  const btn = document.getElementById("promoApply");
+  const apply = () => {
+    const typed = normCode(input.value);
+    note.classList.remove("is-ok");
+    if (!typed) { promo = null; note.textContent = ""; renderCart(); return; }
+    const found = findCoupon(typed);
+    if (!found) { promo = null; note.textContent = "That code is not working"; renderCart(); return; }
+    promo = found;
+    /* Say what actually came off, not what the code claims: a $999 code on a
+       $10 box takes $10, and telling them otherwise is a lie on the receipt. */
+    const sub = cartLines().reduce((a, l) => a + l.amt, 0);
+    const got = discountOn(sub);
+    note.textContent = sub > 0
+      ? money(got) + " off, nice one"
+      : (found.type === "amount" ? money(found.off) : found.off + "%") + " off once you add some cookies";
+    note.classList.add("is-ok");
+    renderCart();
+  };
+  btn.addEventListener("click", apply);
+  input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); apply(); } });
+  input.addEventListener("input", () => {
+    // typing after applying clears it, so the total can never disagree with the box
+    if (promo && normCode(input.value) !== normCode(promo.code)) {
+      promo = null; note.textContent = ""; note.classList.remove("is-ok"); renderCart();
+    }
+  });
+}
 
 cartIg.addEventListener("click", () => {
   if (cartIg.classList.contains("is-disabled")) return;
@@ -1867,7 +1961,7 @@ function toast(msg) {
 /* ---- persistence -------------------------------------------------------- */
 function saveLocal() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, areas: AREAS, minPcs: MIN_PCS }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, areas: AREAS, minPcs: MIN_PCS, coupons: COUPONS }));
   } catch (e) { toast("Couldn’t save on this device"); }
 }
 function loadLocal() {
@@ -1877,6 +1971,7 @@ function loadLocal() {
     const data = JSON.parse(raw);
     if (data && Array.isArray(data.menu) && data.menu.length) {
       MENU = data.menu;
+      if (Array.isArray(data.coupons)) COUPONS = data.coupons;
       if (Array.isArray(data.areas) && data.areas.length) AREAS = data.areas;
       else if (typeof data.delivery === "number") AREAS = [{ name: "Delivery", fee: data.delivery }];
       if (typeof data.minPcs === "number") MIN_PCS = data.minPcs;
@@ -1893,6 +1988,7 @@ function applyChanges() {
   if (areaIdx != null && !AREAS[areaIdx]) areaIdx = null;
   renderMenu();
   renderAreas();
+  renderPromo();
   renderCart();
   saveLocal();
 }
@@ -2045,6 +2141,27 @@ function renderAdmin() {
           </div>`).join("")}
       </div>
       <button class="adm-btn" id="admAreaAdd" type="button">+ Add an area</button>
+
+      <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Discount codes</label>
+      <p class="adm-fb__empty" style="margin:0 0 0.4rem;">${COUPONS.length
+        ? "Anyone can read these in the page source, so treat them as public."
+        : "No codes yet, so the box does not appear on the receipt. Add one and it does."}</p>
+      <div id="admCoupons">
+        ${COUPONS.map((c, i) => `
+          <div class="adm-row" data-coupon="${i}" style="align-items:end;">
+            <div class="adm-field">
+              <label>Code</label>
+              <input data-cf="code" type="text" value="${esc(c.code || "")}" />
+            </div>
+            <div class="adm-field">
+              <label>${c.type === "amount" ? "Dollars off" : "Percent off"}</label>
+              <input data-cf="off" type="number" min="0" step="1" value="${Number(c.off) || 0}" />
+            </div>
+            <label class="adm-check"><input data-cf="type" type="checkbox"${c.type === "amount" ? " checked" : ""} /> $ off, not %</label>
+            <button class="adm-btn adm-btn--danger" data-coupon-del="${i}" type="button" style="align-self:end;">Remove</button>
+          </div>`).join("")}
+      </div>
+      <button class="adm-btn" id="admCouponAdd" type="button">+ Add a code</button>
     </div>`;
 
   const items = MENU.map((m, i) => `
@@ -2137,6 +2254,36 @@ function renderAdmin() {
     applyChanges(); renderAdmin();
     toast("Area added. Edit the name and fee");
   });
+
+  // discount codes
+  const codesBox = document.getElementById("admCoupons");
+  codesBox.querySelectorAll("[data-coupon]").forEach(row => {
+    const i = +row.getAttribute("data-coupon");
+    row.querySelectorAll("[data-cf]").forEach(input => {
+      input.addEventListener("input", () => {
+        const f = input.getAttribute("data-cf");
+        if (f === "type") {
+          COUPONS[i].type = input.checked ? "amount" : "percent";
+          applyChanges(); renderAdmin();
+          return;
+        }
+        if (f === "off") COUPONS[i].off = Math.max(0, parseFloat(input.value) || 0);
+        else COUPONS[i].code = input.value.toUpperCase();
+        applyChanges();
+      });
+    });
+  });
+  codesBox.addEventListener("click", e => {
+    const del = e.target.closest("[data-coupon-del]");
+    if (!del) return;
+    COUPONS.splice(+del.getAttribute("data-coupon-del"), 1);
+    applyChanges(); renderAdmin(); toast("Code removed");
+  });
+  document.getElementById("admCouponAdd").addEventListener("click", () => {
+    COUPONS.push({ code: "NEWCODE", off: 10, type: "percent" });
+    applyChanges(); renderAdmin();
+    toast("Code added. Edit it, then save and download");
+  });
 }
 
 /* item actions (photo / reorder / delete) */
@@ -2214,7 +2361,10 @@ admEls.exportBtn.addEventListener("click", async () => {
     // from ending the script block in the exported file.
     const safeJson = JSON.stringify(MENU, null, 2).replace(/<\//g, "<\\/");
     const menuBlock = "/* MENU:START */\nlet MENU = " + safeJson + ";\n/* MENU:END */";
-    const setBlock = "/* SETTINGS:START */\nlet AREAS = " + JSON.stringify(AREAS, null, 2).replace(/<\//g, "<\\/") + ";\nlet MIN_PCS = " + MIN_PCS + ";\n/* SETTINGS:END */";
+    const setBlock = "/* SETTINGS:START */\nlet AREAS = " + JSON.stringify(AREAS, null, 2).replace(/<\//g, "<\\/")
+      + ";\nlet MIN_PCS = " + MIN_PCS
+      + ";\nlet COUPONS = " + JSON.stringify(COUPONS, null, 2).replace(/<\//g, "<\\/")
+      + ";\n/* SETTINGS:END */";
 
     const menuRe = /\/\* MENU:START \*\/[\s\S]*?\/\* MENU:END \*\//;
     const setRe = /\/\* SETTINGS:START \*\/[\s\S]*?\/\* SETTINGS:END \*\//;

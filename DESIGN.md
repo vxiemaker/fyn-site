@@ -590,6 +590,26 @@ Rules that matter:
 
 The entire site is a single ~1 MB `index.html`. Fonts, mascot, product photos, hero, story photo and the paper texture are all base64 data URIs; only the six Instagram gallery JPEGs and the favicon load as separate files, by relative path. There is no build step, no framework and no external request at runtime, which is why the page works offline, from a file, from a subdirectory, or behind any static host.
 
+### Discount codes
+
+- **No codes means no box.** The coupon field does not render while the list
+  is empty, for the same reason the feedback form does not render while it
+  is unconfigured: a control that rejects everything typed into it is worse
+  than no control.
+- **The discount comes off the subtotal, never the delivery fee**, and is
+  capped at the subtotal, so no code can produce a negative total. A $999
+  code on a $10 box takes $10.
+- **The note says what actually came off, not what the code claims.** That
+  same $999 code reports "$10.00 off", because reporting $999 would be a
+  lie sitting on a receipt.
+- **Typing in the box after applying drops the discount**, so the total can
+  never disagree with the code shown next to it.
+- **Codes stored this way are public.** They ship inside the page, so
+  anyone can read every code, including ones not announced yet. That is
+  fine for a code posted on a story and wrong for anything personal or
+  single use, which would have to live in the database instead. The admin
+  panel says so above the list.
+
 ### Feedback
 
 Customers write it, only she reads it, and it never appears on the site.
