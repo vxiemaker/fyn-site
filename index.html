@@ -1118,11 +1118,11 @@ body.menu-open { overflow: hidden; }
           </div>
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
           <p class="receipt__pay">Cash to the driver on delivery</p>
-          <p class="receipt__how" id="cartHow">Two steps: we copy your order, then you paste it in our DM.</p>
-<p class="receipt__how" id="cartHowInApp" hidden>Two steps: we copy your order, then you close this page and paste it in our chat.</p>
+          <p class="receipt__how" id="cartHow">We copy your order and open our DMs. Just hold down and paste.</p>
+<p class="receipt__how" id="cartHowInApp" hidden>We copy your order. Then close this page and paste it in our chat.</p>
           <div class="receipt__actions" id="cartActions">
             <a class="btn btn--wa btn--block is-disabled" id="cartWa" data-wa href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
-            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy my order</button>
+            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Send my order on Instagram</button>
           </div>
 
           <!-- Step two. Hidden until they tap, then it is the only thing to
@@ -1814,6 +1814,15 @@ async function copyOrder() {
 cartIg.addEventListener("click", async () => {
   if (cartIg.classList.contains("is-disabled")) return;
   const ok = await copyOrder();
+
+  /* One tap for everybody it can work for: copy, then straight to the DM.
+     The panel is only for the two cases where that fails. */
+  if (ok && !inAppBrowser) {
+    rNote.textContent = "Order copied. Paste it in our DM!";
+    window.open(igDmHref, "_blank", "noopener");
+    return;
+  }
+
   const head = document.getElementById("sentHead");
   const sub = document.getElementById("sentSub");
   head.classList.toggle("is-warn", !ok);
