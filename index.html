@@ -637,6 +637,11 @@ body.menu-open { overflow: hidden; }
 /* Off screen rather than display:none, because a bot reads the DOM. */
 .fb__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .receipt__note { text-align: center; font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--red-deep); margin-top: 0.85rem; min-height: 1em; }
+.receipt__pay {
+  text-align: center; margin-top: 0.7rem;
+  font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-soft);
+}
 .receipt__actions { display: grid; gap: 0.6rem; margin-top: 1rem; }
 @media (min-width: 460px) { .receipt__actions { grid-template-columns: 1fr 1fr; } }
 .no-wa .receipt__actions { grid-template-columns: 1fr; }
@@ -1072,6 +1077,7 @@ body.menu-open { overflow: hidden; }
             </div>
           </div>
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
+          <p class="receipt__pay">Cash to the driver on delivery</p>
           <div class="receipt__actions">
             <a class="btn btn--wa btn--block is-disabled" id="cartWa" data-wa href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
             <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy &amp; DM on Instagram</button>
@@ -1257,6 +1263,10 @@ body.menu-open { overflow: hidden; }
           <p>It depends on where you are. Tripoli is $2 and Beirut is $5. Pick your area in the box builder above and it adds to your total. Somewhere else, or want to collect it yourself? Message us and we’ll sort it out.</p>
         </details>
         <details>
+          <summary>How do I pay?</summary>
+          <p>Cash to the driver when your box arrives. Nothing up front, no card and no app. Have the total ready if you can, it makes the handover quicker.</p>
+        </details>
+        <details>
           <summary>Where do you deliver?</summary>
           <p>We deliver around Lebanon. Send us your area with your order and we’ll confirm it and the timing before you pay anything.</p>
         </details>
@@ -1356,7 +1366,7 @@ const CONFIG = {
   PLACEHOLDER_PHONE:     "96171297424",      // <-- real WhatsApp number, digits only incl. 961
   PLACEHOLDER_INSTAGRAM: "fyn.lb",           // real handle, no @
   PLACEHOLDER_LOCATION:  "Lebanon",          // footer
-  PLACEHOLDER_HOURS:     "Pre-order · Min 4 pcs",
+  PLACEHOLDER_HOURS:     "Pre-order · Min 4 pcs · Cash on delivery",
   WHATSAPP_MESSAGE:      "Yo FYN! I’d like to reserve a box 🍪 (min 4 pcs). Here’s what I want:",
 
   /* First line of the order that gets copied into the DM. Reword freely. */
