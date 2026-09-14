@@ -463,6 +463,24 @@ Rules that matter:
   locked until they are there. The note names the one thing still missing
   rather than a generic error: add your name, add your address. Pickup has
   nowhere to deliver to, so that field hides itself and stops being required.
+- **Ordering is two deliberate steps, because one step hid half of it.**
+  The button used to copy and navigate at once, and customers only ever
+  perceived the navigation: the confirmation appeared on a page they had
+  already left, so they arrived in the DM having read no instruction and
+  not knowing anything was on their clipboard. Tapping now copies and
+  stays put, showing the order text as proof with the instruction and a
+  second button beneath it. The last thing read before leaving is what to
+  do on arrival. Editing anything closes it, since what was copied is no
+  longer what is in the box.
+- **A silent clipboard failure used to be a dead end**, dropping somebody
+  into the DM with nothing copied and no message. The panel now says so
+  and the text is on screen to select by hand.
+- **A class that sets `display` beats the browser's own `[hidden]` rule.**
+  Any element that sets display and is toggled with `hidden` needs its own
+  `[hidden] { display: none }`, or it stays on screen with the attribute
+  set. `.rfield`, `.sent` and `.receipt__actions` all carry the guard.
+  Testing the `hidden` property proves nothing here: it was true while the
+  button was still visible. Check computed display instead.
 - **Instagram cannot pre-fill a DM, so the order is copied instead.** There
   is no `?text=` for an Instagram message the way there is for `wa.me`,
   and the services that claim otherwise work by routing the customer

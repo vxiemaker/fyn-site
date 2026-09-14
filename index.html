@@ -637,12 +637,41 @@ body.menu-open { overflow: hidden; }
 /* Off screen rather than display:none, because a bot reads the DOM. */
 .fb__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .receipt__note { text-align: center; font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--red-deep); margin-top: 0.85rem; min-height: 1em; }
+.receipt__how {
+  text-align: center; margin-top: 0.9rem;
+  font-size: 0.72rem; font-weight: 700; line-height: 1.45; color: var(--ink-soft);
+}
+.sent { margin-top: 1rem; display: grid; gap: 0.6rem; }
+.sent[hidden] { display: none; }
+.sent__head {
+  text-align: center; font-family: "Anton", sans-serif; text-transform: uppercase;
+  font-size: 1.05rem; color: #0f7c40;
+}
+.sent__head.is-warn { color: var(--red-deep); }
+.sent__head::before { content: "\2713 "; }
+.sent__head.is-warn::before { content: ""; }
+.sent__sub { text-align: center; font-size: 0.76rem; font-weight: 700; color: var(--ink-soft); line-height: 1.45; }
+.sent__text {
+  font-family: "Archivo", sans-serif; font-size: 0.8rem; line-height: 1.5;
+  color: var(--ink); background: #fff; width: 100%; resize: vertical;
+  border: 2.5px solid var(--ink); border-radius: 10px; padding: 0.6em 0.7em;
+}
+.sent__text:focus-visible { outline: none; box-shadow: 3px 3px 0 var(--red); }
+.sent__row { display: flex; gap: 0.5rem; justify-content: center; }
+.sent__small {
+  font-family: "Archivo", sans-serif; font-weight: 800; font-size: 0.68rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.5em 0.9em; border-radius: 100px; cursor: pointer;
+  border: 2px solid var(--ink); background: transparent; color: var(--ink);
+}
+.sent__small:hover { background: var(--ink); color: var(--cream); }
 .receipt__pay {
   text-align: center; margin-top: 0.7rem;
   font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--ink-soft);
 }
 .receipt__actions { display: grid; gap: 0.6rem; margin-top: 1rem; }
+.receipt__actions[hidden] { display: none; }
 @media (min-width: 460px) { .receipt__actions { grid-template-columns: 1fr 1fr; } }
 .no-wa .receipt__actions { grid-template-columns: 1fr; }
 .receipt__perf { height: 16px; background: radial-gradient(circle at 8px 12px, transparent 8px, var(--receipt) 9px) 0 0 / 16px 16px repeat-x; }
@@ -1078,9 +1107,24 @@ body.menu-open { overflow: hidden; }
           </div>
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
           <p class="receipt__pay">Cash to the driver on delivery</p>
-          <div class="receipt__actions">
+          <p class="receipt__how" id="cartHow">Two steps: we copy your order, then you paste it in our DM.</p>
+          <div class="receipt__actions" id="cartActions">
             <a class="btn btn--wa btn--block is-disabled" id="cartWa" data-wa href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
-            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy &amp; DM on Instagram</button>
+            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy my order</button>
+          </div>
+
+          <!-- Step two. Hidden until they tap, then it is the only thing to
+               act on, so the instruction cannot be missed the way it was when
+               the page jumped straight to Instagram. -->
+          <div class="sent" id="sentPanel" hidden>
+            <p class="sent__head" id="sentHead">Your order is copied</p>
+            <p class="sent__sub" id="sentSub">Now open our DMs and paste it in. Hold down in the message box, then tap Paste.</p>
+            <textarea class="sent__text" id="sentText" readonly rows="7" aria-label="Your order, ready to paste"></textarea>
+            <a class="btn btn--red btn--block" id="sentOpen" href="#" target="_blank" rel="noopener">Open Instagram and paste it</a>
+            <div class="sent__row">
+              <button class="sent__small" id="sentCopy" type="button">Copy again</button>
+              <button class="sent__small" id="sentBack" type="button">Back to my box</button>
+            </div>
           </div>
         </div>
         <div class="receipt__perf" aria-hidden="true"></div>
@@ -1276,7 +1320,7 @@ body.menu-open { overflow: hidden; }
         </details>
         <details>
           <summary>How do I actually order?</summary>
-          <p>Build your box on this page, add your name and where it is going, then tap the button. It copies the whole order and opens our Instagram DMs, so you only have to paste it. We reply to confirm the total and the timing.</p>
+          <p>Build your box on this page, add your name and where it is going, then tap <strong>Copy my order</strong>. Your whole order goes onto your clipboard and we show it to you. Then tap <strong>Open Instagram and paste it</strong>, hold down in the message box, tap Paste, and send. We reply to confirm the total and the timing.</p>
         </details>
         </div>
         <div class="faq__perf" aria-hidden="true"></div>
@@ -1600,6 +1644,9 @@ function orderText(lines, sub, del, total) {
 }
 
 function renderCart() {
+  /* Changing anything invalidates what was copied, so step two closes and
+     they are back on their box. */
+  if (typeof closeSent === "function") closeSent();
   const lines = cartLines();
   const sub = lines.reduce((s, l) => s + l.amt, 0);
   const qty = totalQty();
@@ -1713,20 +1760,61 @@ if (promoWrap) {
   });
 }
 
-cartIg.addEventListener("click", () => {
-  if (cartIg.classList.contains("is-disabled")) return;
+const sentPanel = document.getElementById("sentPanel");
+const cartActions = document.getElementById("cartActions");
+const cartHow = document.getElementById("cartHow");
+const sentText = document.getElementById("sentText");
+
+function closeSent() {
+  if (!sentPanel || sentPanel.hidden) return;
+  sentPanel.hidden = true;
+  cartActions.hidden = false;
+  cartHow.hidden = false;
+}
+
+async function copyOrder() {
   const lines = cartLines();
   const sub = lines.reduce((s, l) => s + l.amt, 0);
   const del = lines.length ? deliveryFee() : 0;
-  const txt = orderText(lines, sub, del, sub + del);
-  const openDM = () => window.open(igDmHref, "_blank", "noopener");
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(
-      () => { rNote.textContent = "Order copied. Paste it in our DM!"; openDM(); },
-      openDM
-    );
-  } else { openDM(); }
+  const txt = orderText(lines, sub, del, sub - discountOn(sub) + del);
+  sentText.value = txt;
+  try {
+    await navigator.clipboard.writeText(txt);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+cartIg.addEventListener("click", async () => {
+  if (cartIg.classList.contains("is-disabled")) return;
+  const ok = await copyOrder();
+  const head = document.getElementById("sentHead");
+  const sub = document.getElementById("sentSub");
+  head.classList.toggle("is-warn", !ok);
+  head.textContent = ok ? "Your order is copied" : "Copy this yourself";
+  /* A silent clipboard failure used to drop them into the DM with nothing.
+     Now the text is on screen either way, so there is no dead end. */
+  sub.textContent = ok
+    ? "Now open our DMs and paste it in. Hold down in the message box, then tap Paste."
+    : "Your phone would not let us copy it. Select the text below and copy it, then open our DMs and paste it.";
+  document.getElementById("sentOpen").href = igDmHref;
+  cartActions.hidden = true;
+  cartHow.hidden = true;
+  sentPanel.hidden = false;
+  sentPanel.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+  if (!ok) { sentText.focus(); sentText.select(); }
 });
+
+document.getElementById("sentCopy").addEventListener("click", async () => {
+  const ok = await copyOrder();
+  const btn = document.getElementById("sentCopy");
+  btn.textContent = ok ? "Copied!" : "Select it above";
+  setTimeout(() => { btn.textContent = "Copy again"; }, 1800);
+  if (!ok) { sentText.focus(); sentText.select(); }
+});
+document.getElementById("sentBack").addEventListener("click", closeSent);
+sentText.addEventListener("focus", () => sentText.select());
 
 renderAreas();
 renderCart();
