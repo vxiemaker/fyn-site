@@ -651,6 +651,17 @@ body.menu-open { overflow: hidden; }
 .sent__head::before { content: "\2713 "; }
 .sent__head.is-warn::before { content: ""; }
 .sent__sub { text-align: center; font-size: 0.76rem; font-weight: 700; color: var(--ink-soft); line-height: 1.45; }
+.sent__inapp {
+  text-align: center; font-size: 0.82rem; font-weight: 700; line-height: 1.5;
+  color: var(--ink); background: var(--cream); border: 2.5px dashed var(--ink);
+  border-radius: 12px; padding: 0.7rem 0.8rem;
+}
+.sent__inapp[hidden] { display: none; }
+/* Anton is very condensed, and an X in it does not read as the close button
+   this is pointing at. Plain and bold is clearer, which is the whole point. */
+.sent__inapp strong { font-weight: 900; font-size: 1.1em; }
+/* Inside Instagram the link is the second chance, not the instruction. */
+.is-inapp .sent .btn--red { font-size: 0.8rem; }
 .sent__text {
   font-family: "Archivo", sans-serif; font-size: 0.8rem; line-height: 1.5;
   color: var(--ink); background: #fff; width: 100%; resize: vertical;
@@ -1108,6 +1119,7 @@ body.menu-open { overflow: hidden; }
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
           <p class="receipt__pay">Cash to the driver on delivery</p>
           <p class="receipt__how" id="cartHow">Two steps: we copy your order, then you paste it in our DM.</p>
+<p class="receipt__how" id="cartHowInApp" hidden>Two steps: we copy your order, then you close this page and paste it in our chat.</p>
           <div class="receipt__actions" id="cartActions">
             <a class="btn btn--wa btn--block is-disabled" id="cartWa" data-wa href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
             <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Copy my order</button>
@@ -1120,6 +1132,10 @@ body.menu-open { overflow: hidden; }
             <p class="sent__head" id="sentHead">Your order is copied</p>
             <p class="sent__sub" id="sentSub">Now open our DMs and paste it in. Hold down in the message box, then tap Paste.</p>
             <textarea class="sent__text" id="sentText" readonly rows="7" aria-label="Your order, ready to paste"></textarea>
+            <p class="sent__inapp" id="sentInApp" hidden>
+              You are already inside Instagram. Close this page with the
+              <strong>X</strong> at the top, open our chat, and paste it there.
+            </p>
             <a class="btn btn--red btn--block" id="sentOpen" href="#" target="_blank" rel="noopener">Open Instagram and paste it</a>
             <div class="sent__row">
               <button class="sent__small" id="sentCopy" type="button">Copy again</button>
@@ -1760,6 +1776,15 @@ if (promoWrap) {
   });
 }
 
+/* Instagram's in-app browser identifies itself, and Facebook's carries FBAN
+   or FBAV. Used only to change wording, so a wrong guess costs nothing. */
+const inAppBrowser = /Instagram|FBAN|FBAV/i.test(navigator.userAgent || "");
+if (inAppBrowser) {
+  document.documentElement.classList.add("is-inapp");
+  const a = document.getElementById("cartHow"), b = document.getElementById("cartHowInApp");
+  if (a && b) { a.hidden = true; b.hidden = false; }
+}
+
 const sentPanel = document.getElementById("sentPanel");
 const cartActions = document.getElementById("cartActions");
 const cartHow = document.getElementById("cartHow");
@@ -1795,9 +1820,21 @@ cartIg.addEventListener("click", async () => {
   head.textContent = ok ? "Your order is copied" : "Copy this yourself";
   /* A silent clipboard failure used to drop them into the DM with nothing.
      Now the text is on screen either way, so there is no dead end. */
-  sub.textContent = ok
-    ? "Now open our DMs and paste it in. Hold down in the message box, then tap Paste."
-    : "Your phone would not let us copy it. Select the text below and copy it, then open our DMs and paste it.";
+  const inApp = document.getElementById("sentInApp");
+  inApp.hidden = !inAppBrowser;
+  if (inAppBrowser) {
+    /* They arrived from the bio link, so they are already in the app and the
+       page cannot usefully "open Instagram" from inside it. */
+    sub.textContent = ok
+      ? "Hold down in the message box and tap Paste."
+      : "Your phone would not let us copy it. Select the text below and copy it by hand first.";
+    document.getElementById("sentOpen").textContent = "Or try opening our chat";
+  } else {
+    sub.textContent = ok
+      ? "Now open our DMs and paste it in. Hold down in the message box, then tap Paste."
+      : "Your phone would not let us copy it. Select the text below and copy it, then open our DMs and paste it.";
+    document.getElementById("sentOpen").textContent = "Open Instagram and paste it";
+  }
   document.getElementById("sentOpen").href = igDmHref;
   cartActions.hidden = true;
   cartHow.hidden = true;
