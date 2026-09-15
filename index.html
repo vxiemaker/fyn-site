@@ -1118,11 +1118,11 @@ body.menu-open { overflow: hidden; }
           </div>
           <p class="receipt__note" id="rNote" role="status" aria-live="polite">Min order 4 pcs</p>
           <p class="receipt__pay">Cash to the driver on delivery</p>
-          <p class="receipt__how" id="cartHow">We copy your order and open our DMs. Just hold down and paste.</p>
+          <p class="receipt__how" id="cartHow">We copy your order. Then paste it in our DMs.</p>
 <p class="receipt__how" id="cartHowInApp" hidden>We copy your order. Then close this page and paste it in our chat.</p>
           <div class="receipt__actions" id="cartActions">
             <a class="btn btn--wa btn--block is-disabled" id="cartWa" data-wa href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
-            <button class="btn btn--ink btn--block is-disabled" id="cartIg" type="button">Send my order on Instagram</button>
+            <button class="btn btn--red btn--block is-disabled" id="cartIg" type="button">Copy my order</button>
           </div>
 
           <!-- Step two. Hidden until they tap, then it is the only thing to
@@ -1132,11 +1132,10 @@ body.menu-open { overflow: hidden; }
             <p class="sent__head" id="sentHead">Your order is copied</p>
             <p class="sent__sub" id="sentSub">Now open our DMs and paste it in. Hold down in the message box, then tap Paste.</p>
             <textarea class="sent__text" id="sentText" readonly rows="7" aria-label="Your order, ready to paste"></textarea>
-            <p class="sent__inapp" id="sentInApp" hidden>
-              You are already inside Instagram. Close this page with the
-              <strong>X</strong> at the top, open our chat, and paste it there.
+            <p class="sent__inapp" id="sentInApp">
+              Go to our Instagram DMs, hold down in the message box and tap
+              <strong>Paste</strong>.
             </p>
-            <a class="btn btn--red btn--block" id="sentOpen" href="#" target="_blank" rel="noopener">Open Instagram and paste it</a>
             <div class="sent__row">
               <button class="sent__small" id="sentCopy" type="button">Copy again</button>
               <button class="sent__small" id="sentBack" type="button">Back to my box</button>
@@ -1815,13 +1814,6 @@ cartIg.addEventListener("click", async () => {
   if (cartIg.classList.contains("is-disabled")) return;
   const ok = await copyOrder();
 
-  /* One tap for everybody it can work for: copy, then straight to the DM.
-     The panel is only for the two cases where that fails. */
-  if (ok && !inAppBrowser) {
-    rNote.textContent = "Order copied. Paste it in our DM!";
-    window.open(igDmHref, "_blank", "noopener");
-    return;
-  }
 
   const head = document.getElementById("sentHead");
   const sub = document.getElementById("sentSub");
@@ -1830,21 +1822,20 @@ cartIg.addEventListener("click", async () => {
   /* A silent clipboard failure used to drop them into the DM with nothing.
      Now the text is on screen either way, so there is no dead end. */
   const inApp = document.getElementById("sentInApp");
-  inApp.hidden = !inAppBrowser;
+  inApp.innerHTML = inAppBrowser
+    ? 'Close this page with the <strong>X</strong> at the top, open our chat, and paste it there.'
+    : 'Go to our Instagram DMs, hold down in the message box and tap <strong>Paste</strong>.';
   if (inAppBrowser) {
     /* They arrived from the bio link, so they are already in the app and the
        page cannot usefully "open Instagram" from inside it. */
     sub.textContent = ok
       ? "Hold down in the message box and tap Paste."
       : "Your phone would not let us copy it. Select the text below and copy it by hand first.";
-    document.getElementById("sentOpen").textContent = "Or try opening our chat";
   } else {
     sub.textContent = ok
       ? "Now open our DMs and paste it in. Hold down in the message box, then tap Paste."
       : "Your phone would not let us copy it. Select the text below and copy it, then open our DMs and paste it.";
-    document.getElementById("sentOpen").textContent = "Open Instagram and paste it";
   }
-  document.getElementById("sentOpen").href = igDmHref;
   cartActions.hidden = true;
   cartHow.hidden = true;
   sentPanel.hidden = false;
