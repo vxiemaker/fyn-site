@@ -172,13 +172,17 @@ motion:
   ease: "cubic-bezier(0.22, 0.61, 0.36, 1)"
   control: 200ms
   standard: 250ms
-  reveal: 500ms
+  reveal: 620ms
+  reveal-cascade-step: 75ms
   drawer: 320ms
   panel: 360ms
   marquee-text: 26s
   marquee-photos: 46s
   stamp-rotation: 22s
   mascot-float: 5.5s
+  cookie-grab: 1.9s
+  order-stamp: 1.9s
+  order-like: 2.2s
 
 components:
   button-primary:
@@ -336,6 +340,7 @@ components:
     color: "{colors.ink-soft} at 42% opacity"
     shownAbove: 1400px
     note: "the side margins run 370px each at 1920"
+    except: "#gram, where the photo strip is full bleed and leaves no margin to sit in"
   top-nav:
     height: 72px
     backgroundColor: transparent
@@ -365,6 +370,10 @@ components:
     usage: "empty receipt, the sticker on the story seam, the footer, the 404 page, the share card"
     treatment: "transparent cut-out placed on the page, never boxed in a frame"
     inlined: "once, as {colors} sibling token --mascot, referenced by both in-page uses"
+  mascot-wink:
+    usage: "the cookie grab on a menu card, and the wink on the order panel"
+    treatment: "the same cut-out with his left eye shut: the pupil painted out in skin and a 7px curve drawn where the lashes meet"
+    inlined: "as --mascot-wink, +24KB, the only second copy of him in the file"
 ---
 
 # Design System: FYN
@@ -507,6 +516,24 @@ Rules that matter:
   The rest of this note describes what happens when it is on. Dropping a `{ name: "Pickup", fee: 0 }` row into the list would have produced "Deliver to Pickup", a "Delivery $0.00" line, "4 pcs to Pickup" and an order message asking for an address nobody needs. So the row carries a `pickup: true` flag and six strings follow it: the group label, the chip, the receipt line label and its value, the confirmation note, and the order message, which asks for a pickup time instead of an address. The flag is a checkbox in the owner panel that zeroes and locks the fee, and it is deleted rather than written false when unticked, so the exported settings block stays as clean as the one that ships.
 - **The receipt** is the centrepiece and behaves like real paper: gold ticket stripe across the top, dashed rules, a radial-punch perforation along the bottom edge, monospaced-feel tabular figures. Every line is editable in place with a −/+ pill and an ✕.
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
+- **A returning customer is remembered.** Name, address and delivery area are
+  kept in their own browser under `fyn_me_v1` and filled back in on the next
+  visit, so ordering again is pick the cookies and tap. Nothing is sent
+  anywhere and nothing reaches the admin panel.
+  - **Written only when they order**, not as they type. Filling in a form and
+    walking away is not consent to keep anything.
+  - **The area is stored by name, not by index.** She can reorder or rename
+    areas in the admin panel, and an index would then point at the wrong town.
+    A saved area she has since deleted simply selects nothing.
+  - **A line says where the details came from**, with a button to wipe them.
+    It hides itself the moment they edit a field, because by then it has said
+    what it had to say. `.rsaved[hidden]` needs its own display guard: the
+    class sets flex, which beats the browser's own `[hidden]`. Third time that
+    rule has caught something on this page.
+  - **A browser with no storage loses nothing.** Every read and write is
+    wrapped; in private mode the feature is simply absent and the order still
+    works.
+
 - **Empty state**: the mascot stands in the receipt as a transparent cut-out with "Your box is empty. Add some cookies above." beneath him, rather than rendering an empty table. He is replaced by the line items the moment anything is added, so he never competes with content.
 - **Marquees**: two, both built the same way: duplicate the set exactly, translate the track −50%, give every item identical margin so the loop has no seam. The text band runs 26s, the photo strip 46s behind a soft mask. Both pause on hover and focus.
 - **The footer is the closing statement, not a link farm.** The hero opens on
@@ -556,7 +583,17 @@ Rules that matter:
 - **The side margins carry vertical rail text above 1400px.** At 1920 the
   container leaves 370px of empty ground on each side, which is 38% of the
   screen doing nothing. The rails disappear below 1400px so a phone never sees
-  them.
+  them. The gallery section is the exception: its photo strip runs the full
+  width of the page, so there is no margin left and the rail would sit under
+  the last photo. `#gram .rail` is off.
+- **The gallery strip is full bleed, and it gets there structurally.** The
+  `.gram-marquee` is a direct child of `#gram` rather than of `.container`,
+  while the heading and the follow button keep their own containers and their
+  normal measure. The alternative, `width: 100vw` with negative margins,
+  counts the scrollbar on Windows and overshoots by half a scrollbar at each
+  edge. Being outside the container needs no viewport maths at all. At 1440
+  the strip shows six tiles instead of four, and the 6% mask fade at each end
+  still hides the loop seam.
 - **The page alternates tone on purpose.** Top to bottom: cream hero, scarlet
   marquee, cream menu, scarlet story, cream gallery, deep cream order,
   cream FAQ, ink footer. Three cream sections in a row is the
@@ -579,10 +616,84 @@ Rules that matter:
 
 `cubic-bezier(0.22, 0.61, 0.36, 1)` for everything. 200ms on controls, 250ms standard, 500ms on scroll reveals.
 
-- **Scroll reveal** via IntersectionObserver, 26px rise plus fade, with a stagger of 70ms across card positions and a load-time safety net so nothing stays invisible in a background tab.
+- **Scroll reveal** via IntersectionObserver, 620ms, in four flavours rather
+  than one. The default is a 26px rise. `reveal--left` and `reveal--right`
+  bring a block in from the side it lives on, so the story photo and its words
+  meet in the middle and the two order channels come from their own edges.
+  `reveal--pop` adds `scale(0.955)` for panels and photos: the receipt, the
+  fine print, the feedback form, every menu card. Twenty three blocks all doing
+  the identical rise read as a page loading rather than a page moving.
+- **Groups cascade their own children** with `.r-cascade`, driven off the
+  parent's `is-visible` rather than an observer entry each: one element watched
+  instead of forty, and the order of the cascade is the order in the markup.
+  75ms a step, capped at the sixth child. Every section heading, the story
+  copy, the FAQ questions and the whole footer use it.
+- **The safety net used to cancel the feature.** It revealed every `.reveal`
+  1.4s after load, for the background-tab case where the observer may not fire.
+  Measured on a cold load: all eighteen blocks below the fold were already
+  visible before a pixel had been scrolled, so nothing past the first screen
+  ever animated. It now reveals only what is on screen at that moment, and runs
+  again on `visibilitychange`, which is the case it was written for.
+- **The observer fires at `threshold: 0`, `rootMargin: 0 0 -12% 0`.** A
+  fractional threshold made tall blocks wait: the receipt had to show 12% of
+  itself, which on a phone is most of a screen of scrolling after it had
+  already appeared. At zero, tall and short blocks arrive in the same place.
+- **A sideways slide has to fit the gutter.** `translateX(34px)` put a moving
+  block 14px past the right edge on a 390px screen, where the container's own
+  padding is about 20px. Clipped and unreachable thanks to `overflow-x: hidden`,
+  but `body.scrollWidth` reported it, so the distance is
+  `clamp(14px, 2.6vw, 34px)` instead.
 - **Perpetual loops, all decorative:** the mascot floats on a 5.5s cycle, the stamp rotates on 22s, the two marquees run continuously.
 - **Feedback loops, all triggered:** quantity pops to 1.42×, the total pops to 1.16×, the card flashes a scarlet ring, and the nav mascot **chomps**, a 550ms rotate-and-scale, every time a cookie is added.
-- **Everything animates `transform` and `opacity` only.** No `width`, `height`, `top` or `left`.
+- **The cookie grab**, 1.9s, on the card that was tapped. He leans in from
+  behind the photo, the cookie flies into his hand, he bites, he winks, he
+  ducks back down. Both pieces live inside `.card__media`, which already clips,
+  so the bottom edge cuts him off the way a counter would and "behind the card"
+  costs no extra box. The flying cookie wears the card's own photo, copied from
+  the `img` already in the DOM, so the file never carries the picture twice.
+  Only orderable cards get it; a coming-soon card has nothing to take.
+- **The order stamp**, 1.9s, when they tap Copy my order. A scarlet `COPIED`
+  block thumps down across the order text from 3.2x and overshoots twice, the
+  paper takes a four step knock, and he rises on the right of the same box, shuts
+  one eye and a scarlet heart pops beside his head and beats twice. The stamp
+  does not clear: it settles at 18% opacity and stays, the way a real stamp
+  would, light enough to read the order through.
+- **The eye and the heart land together**, within a frame of each other at
+  1.33s, and hold for about 0.58s. Either one alone is a smaller idea than both.
+- **A like here is a heart, not a thumb.** The first pass drew a thumbs up as
+  inline SVG and it read as a middle finger. The two gestures differ only by how
+  stubby the digit is and how far it leans, and at 52px on a phone that margin
+  is not there: shortening it turned the hand into a mitten, leaning it further
+  laid the hand on its side. On a page that confirms somebody's order a gesture
+  that can be misread at all is not worth it, and on Instagram, where this shop
+  lives and where every order ends up, a like already is a heart.
+- **It sits beside his head, not on his chest.** The heart is the brand scarlet
+  and so is his shirt, so on his chest it had nothing to sit against. Up by his
+  ear it pops against the white of the order text.
+- **Still drawn in the page rather than as a third picture of him.** Inline SVG,
+  a few hundred bytes against 24KB for another frame of him, and it keeps its
+  own timing instead of arriving in the same cut as the eye.
+- **He rests at 44% of his own height, not 50%**, which is what keeps the whole
+  of him and anything hanging off him inside the slip.
+- **The stamp only runs when the copy actually worked.** On the failure branch
+  the headline reads "Copy this yourself", and stamping COPIED across it would
+  be a lie, so that path gets neither stamp nor mascot.
+- **It costs the panel no layout.** Both pieces are absolute inside a wrapper
+  around the textarea that was already there, so the panel is the same height
+  before, during and after, and there is no empty band left behind. The wrapper
+  carries 4px of padding on two sides purely so its clip does not eat the
+  textarea's focus shadow.
+- **Everything animates `transform` and `opacity` only**, plus `background-image`
+  on the one frame swap. No `width`, `height`, `top` or `left`.
+- **Chromium cross fades `background-image` instead of cutting it.** A wink
+  written as two keyframes dissolved over a quarter of a second, which at card
+  size read as nothing at all. The face swap is its own animation on
+  `steps(1, end)` so it cuts; the peek keeps real easing alongside it.
+- **A mascot sized to the photo is too small to wink.** At 100% of the media
+  box his head came out near 45px on a 220px card and a shut eye was two
+  pixels. He runs at 124% and hangs 2% past the right edge instead, which keeps
+  the face legible while leaving the top and left of the cookie in view. Third
+  time a piece of art has needed measuring at phone size rather than desktop.
 - **`prefers-reduced-motion` disables all of it**, converts the photo strip into a normal horizontal scroller, and pins every reveal visible.
 
 ## 7. Anti-Patterns (banned in this system)
