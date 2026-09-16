@@ -622,6 +622,19 @@ body.menu-open { overflow: hidden; }
 .receipt__total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.5rem; padding-top: 0.7rem; border-top: 2px solid var(--ink); }
 .receipt__total .label { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 1.25rem; }
 .receipt__total .val { font-family: "Anton", sans-serif; font-size: 1.8rem; color: var(--red); font-variant-numeric: tabular-nums; }
+/* Lebanon quotes in dollars and pays in pounds, so every figure carries its
+   pound line underneath. Small and muted: the dollar figure is still the one
+   being read, and the pound one is what they hand the driver. */
+.receipt__v { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
+.lbp {
+  display: block; font-family: "Archivo", sans-serif; font-weight: 700;
+  font-size: 0.62rem; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+  white-space: nowrap; margin-top: 0.1rem;
+}
+/* With the rate at 0 there is nothing to say, so the line leaves no gap. */
+.lbp:empty { display: none; }
+.lbp--big { font-size: 0.74rem; color: var(--red-deep); }
+.receipt__row .amt { line-height: 1.05; text-align: right; }
 .receipt__promo { margin-top: 0.95rem; }
 .promo { display: flex; gap: 0.45rem; }
 .promo input {
@@ -1296,10 +1309,10 @@ body.menu-open { overflow: hidden; }
             <p class="promo__note" id="promoNote" role="status" aria-live="polite"></p>
           </div>
           <div class="receipt__totals">
-            <div class="receipt__line"><span>Subtotal</span><span id="rSub">$0.00</span></div>
-            <div class="receipt__line" id="rDiscLine" hidden><span id="rDiscLabel">Discount</span><span id="rDisc">$0.00</span></div>
-            <div class="receipt__line"><span id="rDelLabel">Delivery</span><span id="rDel">$0.00</span></div>
-            <div class="receipt__total"><span class="label">Total</span><span class="val" id="rTotal">$0.00</span></div>
+            <div class="receipt__line"><span>Subtotal</span><span class="receipt__v"><span id="rSub">$0.00</span><span class="lbp" id="rSubL"></span></span></div>
+            <div class="receipt__line" id="rDiscLine" hidden><span id="rDiscLabel">Discount</span><span class="receipt__v"><span id="rDisc">$0.00</span><span class="lbp" id="rDiscL"></span></span></div>
+            <div class="receipt__line"><span id="rDelLabel">Delivery</span><span class="receipt__v"><span id="rDel">$0.00</span><span class="lbp" id="rDelL"></span></span></div>
+            <div class="receipt__total"><span class="label">Total</span><span class="receipt__v"><span class="val" id="rTotal">$0.00</span><span class="lbp lbp--big" id="rTotalL"></span></span></div>
           </div>
           <div class="receipt__details">
             <p class="rsaved" id="rSaved" hidden>
@@ -1770,6 +1783,10 @@ let AREAS = [
   { name: "Beirut", fee: 5 }
 ];
 let MIN_PCS = 4;             // minimum pieces per order - editable in the admin panel
+/* Lebanese pounds to the dollar. Shown under every figure on the receipt,
+   never the sum that produced it. Set it to 0 to take the pound lines off
+   the page entirely. Editable in the admin panel. */
+let LBP_RATE = 90000;
 /* Discount codes. The box on the receipt is always shown; while this list is
    empty every code typed in is turned away, which is deliberate.
    type "percent" takes that many percent off the subtotal, "amount" takes
@@ -1785,6 +1802,12 @@ function rebuildPrices(){ priceMap = {}; MENU.forEach(m => { if (!m.soon) priceM
 rebuildPrices();
 const cart = {};             // name -> qty
 const money = n => "$" + n.toFixed(2);
+/* Rounded before grouping: a dollar figure with cents times the rate is a
+   whole number of pounds anyway, and rounding keeps float noise off screen.
+   An empty string when the rate is 0 or the figure is, so an empty box does
+   not read "0 L.L." four times over, and .lbp:empty then takes the line out
+   of the layout rather than leaving a gap. */
+const lbp = n => (LBP_RATE > 0 && n > 0 ? Math.round(n * LBP_RATE).toLocaleString("en-US") + " L.L." : "");
 
 const areaPicker = document.getElementById("areaPicker");
 /* A code comes off the subtotal only, never the delivery fee, and can never
@@ -1899,13 +1922,24 @@ const totalQty = () => Object.keys(cart).reduce((s, n) => s + cart[n], 0);
 
 function orderText(lines, sub, del, total) {
   const a = currentArea();
+  /* The message mirrors the receipt, so it carries the same pound figures.
+     In brackets after the dollars rather than underneath, because plain text
+     has no small grey type to put a second line in. Empty when there is
+     nothing to convert, and then the brackets do not appear either. */
+  const both = n => { const p = lbp(n); return money(n) + (p ? " (" + p + ")" : ""); };
   let t = CONFIG.ORDER_OPENER + "\n";
-  lines.forEach(l => { t += `${l.qty}× ${l.name} - ${money(l.amt)}\n`; });
-  t += `-----\nSubtotal: ${money(sub)}`;
+  lines.forEach(l => { t += `${l.qty}× ${l.name} - ${both(l.amt)}\n`; });
+  t += `-----\nSubtotal: ${both(sub)}`;
   const disc = discountOn(sub);
-  if (disc) t += `\nDiscount (${normCode(promo.code)}): \u2212${money(disc)}`;
-  t += isPickup(a) ? `\nPickup: free` : `\nDelivery${a ? " (" + a.name + ")" : ""}: ${money(del)}`;
-  t += `\nTotal: ${money(total)}`;
+  if (disc) {
+    /* The sign belongs on both figures. With it only on the dollars the
+       pound one reads as money being added, and it disagreed with the
+       receipt, which shows the minus on both. */
+    const dp = lbp(disc);
+    t += `\nDiscount (${normCode(promo.code)}): \u2212${money(disc)}` + (dp ? ` (\u2212${dp})` : "");
+  }
+  t += isPickup(a) ? `\nPickup: free` : `\nDelivery${a ? " (" + a.name + ")" : ""}: ${both(del)}`;
+  t += `\nTotal: ${both(total)}`;
   t += `\n\nName: ${ordName.value.trim()}`;
   if (!isPickup(a)) t += `\nAddress: ${ordAddr.value.trim()}`;
   return t;
@@ -1922,21 +1956,25 @@ function renderCart() {
   const total = sub - discountOn(sub) + del;
 
   receiptRows.innerHTML = lines.length
-    ? lines.map(l => `<div class="receipt__row"><span class="rq" data-name="${esc(l.name)}"><button type="button" data-act="dec" aria-label="One less ${esc(l.name)}">&minus;</button><span class="rq__n">${l.qty}</span><button type="button" data-act="inc" aria-label="One more ${esc(l.name)}">+</button></span><span class="item" translate="no">${esc(l.name)}</span><span class="amt">${money(l.amt)}</span><button type="button" class="rrm" data-name="${esc(l.name)}" aria-label="Take ${esc(l.name)} out of the box">&times;</button></div>`).join("")
+    ? lines.map(l => `<div class="receipt__row"><span class="rq" data-name="${esc(l.name)}"><button type="button" data-act="dec" aria-label="One less ${esc(l.name)}">&minus;</button><span class="rq__n">${l.qty}</span><button type="button" data-act="inc" aria-label="One more ${esc(l.name)}">+</button></span><span class="item" translate="no">${esc(l.name)}</span><span class="amt">${money(l.amt)}<span class="lbp">${lbp(l.amt)}</span></span><button type="button" class="rrm" data-name="${esc(l.name)}" aria-label="Take ${esc(l.name)} out of the box">&times;</button></div>`).join("")
     : `<div class="receipt__empty"><span class="receipt__mascot" aria-hidden="true"></span><span>Your box is empty. Add some cookies above.</span></div>`;
 
   rSub.textContent = money(sub);
+  rSubL.textContent = lbp(sub);
   const disc = discountOn(sub);
   rDiscLine.hidden = !disc;
   if (disc) {
     rDiscLabel.textContent = "Discount (" + normCode(promo.code) + ")";
     rDisc.textContent = "\u2212" + money(disc);
+    rDiscL.textContent = disc ? "\u2212" + lbp(disc) : "";
   }
   const picking = isPickup(currentArea());
   rDelLabel.textContent = picking ? "Pickup" : "Delivery";
   rDel.textContent = picking ? "Free" : money(del);
+  rDelL.textContent = picking ? "" : lbp(del);
   const totalChanged = rTotal.textContent !== money(total);
   rTotal.textContent = money(total);
+  rTotalL.textContent = lbp(total);
   if (totalChanged && !reduceMotion) {
     rTotal.classList.remove("is-bump");
     void rTotal.offsetWidth;            // restart the animation
@@ -2403,7 +2441,7 @@ function toast(msg) {
 /* ---- persistence -------------------------------------------------------- */
 function saveLocal() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, areas: AREAS, minPcs: MIN_PCS, coupons: COUPONS }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ menu: MENU, areas: AREAS, minPcs: MIN_PCS, coupons: COUPONS, lbpRate: LBP_RATE }));
   } catch (e) { toast("Couldn’t save on this device"); }
 }
 function loadLocal() {
@@ -2417,6 +2455,7 @@ function loadLocal() {
       if (Array.isArray(data.areas) && data.areas.length) AREAS = data.areas;
       else if (typeof data.delivery === "number") AREAS = [{ name: "Delivery", fee: data.delivery }];
       if (typeof data.minPcs === "number") MIN_PCS = data.minPcs;
+      if (typeof data.lbpRate === "number" && data.lbpRate >= 0) LBP_RATE = data.lbpRate;
       return true;
     }
   } catch (e) {}
@@ -2565,6 +2604,10 @@ function renderAdmin() {
           <label for="admMin">Minimum pieces</label>
           <input id="admMin" type="number" min="1" step="1" value="${MIN_PCS}" />
         </div>
+        <div class="adm-field">
+          <label for="admRate">Pounds per dollar</label>
+          <input id="admRate" type="number" min="0" step="1000" value="${LBP_RATE}" />
+        </div>
       </div>
       <label class="adm-hint" style="font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Delivery areas and pickup</label>
       <div id="admAreas">
@@ -2662,6 +2705,8 @@ function renderAdmin() {
   // settings
   const mEl = document.getElementById("admMin");
   mEl.addEventListener("input", () => { MIN_PCS = Math.max(1, parseInt(mEl.value, 10) || 1); applyChanges(); });
+  const rEl = document.getElementById("admRate");
+  rEl.addEventListener("input", () => { LBP_RATE = Math.max(0, parseInt(rEl.value, 10) || 0); applyChanges(); });
 
   // delivery areas
   const areasBox = document.getElementById("admAreas");
@@ -2805,6 +2850,7 @@ admEls.exportBtn.addEventListener("click", async () => {
     const menuBlock = "/* MENU:START */\nlet MENU = " + safeJson + ";\n/* MENU:END */";
     const setBlock = "/* SETTINGS:START */\nlet AREAS = " + JSON.stringify(AREAS, null, 2).replace(/<\//g, "<\\/")
       + ";\nlet MIN_PCS = " + MIN_PCS
+      + ";\nlet LBP_RATE = " + LBP_RATE
       + ";\nlet COUPONS = " + JSON.stringify(COUPONS, null, 2).replace(/<\//g, "<\\/")
       + ";\n/* SETTINGS:END */";
 

@@ -516,6 +516,32 @@ Rules that matter:
   The rest of this note describes what happens when it is on. Dropping a `{ name: "Pickup", fee: 0 }` row into the list would have produced "Deliver to Pickup", a "Delivery $0.00" line, "4 pcs to Pickup" and an order message asking for an address nobody needs. So the row carries a `pickup: true` flag and six strings follow it: the group label, the chip, the receipt line label and its value, the confirmation note, and the order message, which asks for a pickup time instead of an address. The flag is a checkbox in the owner panel that zeroes and locks the fee, and it is deleted rather than written false when unticked, so the exported settings block stays as clean as the one that ships.
 - **The receipt** is the centrepiece and behaves like real paper: gold ticket stripe across the top, dashed rules, a radial-punch perforation along the bottom edge, monospaced-feel tabular figures. Every line is editable in place with a −/+ pill and an ✕.
 - **Stepper**: cream pill that fills scarlet once quantity passes zero, so a filled box is scannable at a glance. On phones it goes full width for a proper thumb target.
+- **Every figure on the receipt carries its price in Lebanese pounds.** The
+  country quotes in dollars and pays in pounds, so each line item, the
+  subtotal, the discount and the total each show a smaller, muted pound figure
+  underneath. The dollar figure stays the one being read; the pound one is
+  what they hand the driver. The rate and the multiplication are never shown,
+  only the result.
+  - **The rate is `LBP_RATE` in the settings block**, with a field in the admin
+    panel beside the minimum pieces, so when the pound moves she changes it and
+    exports the file herself. It rides in the export and in localStorage next
+    to the menu.
+  - **Zero means off.** `lbp()` returns an empty string when the rate is 0 or
+    the figure is, and `.lbp:empty { display: none }` takes the line out of the
+    layout rather than leaving a gap. So an empty box does not read "0 L.L."
+    four times over, and setting the rate to 0 removes the pound lines from the
+    page entirely.
+  - Rounded before grouping: a dollar figure with cents times the rate is a
+    whole number of pounds anyway, and rounding keeps float noise off screen.
+  - **The copied order carries the same figures**, in brackets after the
+    dollars rather than underneath, because plain text has no small grey type
+    to put a second line in. It runs through the same `lbp()`, so the message
+    can never disagree with the screen. At a rate of 0 the brackets do not
+    appear at all.
+  - **A minus belongs on both figures or neither.** The discount line first
+    read `-$1.00 (90,000 L.L.)`, where the pound figure looks like money being
+    added and contradicted the receipt, which puts the minus on both.
+
 - **A returning customer is remembered.** Name, address and delivery area are
   kept in their own browser under `fyn_me_v1` and filled back in on the next
   visit, so ordering again is pick the cookies and tap. Nothing is sent
